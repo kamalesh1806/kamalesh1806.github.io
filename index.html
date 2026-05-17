@@ -498,10 +498,9 @@ nav.scrolled{
 .lab-rocket{
   position:absolute;left:0;top:0;
   width:36px;height:42px;
-  pointer-events:none;z-index:1;opacity:0;     /* below cards (z:2), above trail (z:0) */
-  filter:drop-shadow(0 0 8px rgba(94,234,212,0.75)) drop-shadow(0 0 18px rgba(139,92,246,0.45));
+  pointer-events:none;z-index:1;opacity:0;     /* below cards (z:2): rocket weaves in & out as it travels */
+  filter:drop-shadow(0 0 8px rgba(94,234,212,0.85)) drop-shadow(0 0 22px rgba(139,92,246,0.55));
   will-change:transform,opacity;
-  transition:opacity 0.4s;
 }
 .lab-rocket svg{display:block;width:100%;height:100%}
 
@@ -616,8 +615,12 @@ nav.scrolled{
   transform:translateX(2px);
 }
 .proj-flip-cue svg{width:12px;height:12px}
+/* Row of action buttons on the card-back. */
+.proj-actions{
+  display:flex;flex-wrap:wrap;gap:10px;
+  align-items:center;margin-top:auto;
+}
 .proj-back-btn{
-  align-self:flex-start;
   display:inline-flex;align-items:center;gap:6px;
   font-family:var(--font-mono);font-size:11px;
   color:rgba(94,234,212,0.85);
@@ -632,17 +635,94 @@ nav.scrolled{
   border-color:rgba(94,234,212,0.6);
   color:var(--cyan);
 }
+/* Primary CTA on the back: open presentation in modal. */
+.proj-present-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--font-mono);font-size:11px;
+  color:var(--bg);
+  background:var(--cyan);
+  border:1px solid var(--cyan);
+  padding:7px 14px;border-radius:100px;
+  cursor:pointer;letter-spacing:0.06em;text-decoration:none;
+  transition:background 0.2s,color 0.2s,box-shadow 0.2s;
+}
+.proj-present-btn:hover{
+  background:transparent;
+  color:var(--cyan);
+  box-shadow:0 0 16px rgba(94,234,212,0.45);
+}
+.proj-present-btn svg{width:11px;height:11px}
 
-/* Canvas mini-vis — dark bg so animations pop */
+/* Card thumbnail — the first slide of each presentation. */
 .project-minivis{
-  width:100%;height:140px;
+  width:100%;height:170px;
   margin-bottom:20px;border-radius:10px;
   overflow:hidden;
   background:rgba(0,0,0,0.45);
   border:1px solid rgba(94,234,212,0.18);
   box-shadow:inset 0 0 20px rgba(0,0,0,0.4);
+  position:relative;
 }
 .project-minivis canvas{display:block;width:100%;height:100%}
+.project-minivis img{
+  display:block;width:100%;height:100%;
+  object-fit:cover;object-position:center top;
+  transition:transform 0.5s ease;
+}
+.project-card:hover .project-minivis img{transform:scale(1.04)}
+
+/* ─── PDF viewer modal ─────────────────────────────────────
+   Opens when a user clicks "View Presentation". Embeds the
+   PDF with toolbar hidden (#toolbar=0&navpanes=0) so the
+   browser's download button is suppressed; right-click is
+   blocked on the modal as well. */
+.pdf-modal{
+  position:fixed;inset:0;z-index:10000;
+  display:flex;align-items:center;justify-content:center;
+  animation:pdfFadeIn 0.22s ease-out;
+}
+.pdf-modal[hidden]{display:none}
+@keyframes pdfFadeIn{from{opacity:0}to{opacity:1}}
+.pdf-modal-overlay{
+  position:absolute;inset:0;
+  background:rgba(0,0,5,0.88);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.pdf-modal-content{
+  position:relative;
+  width:min(94vw, 1400px);
+  height:min(94vh, 920px);
+  background:#000005;
+  border:1px solid rgba(94,234,212,0.25);
+  border-radius:14px;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 0 60px rgba(94,234,212,0.18),0 30px 80px rgba(0,0,0,0.6);
+}
+.pdf-modal-header{
+  padding:14px 18px;
+  background:rgba(94,234,212,0.04);
+  border-bottom:1px solid rgba(94,234,212,0.12);
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--font-mono);font-size:11px;
+  color:var(--cyan);letter-spacing:0.08em;text-transform:uppercase;
+}
+.pdf-modal-title{display:flex;align-items:center;gap:10px}
+.pdf-modal-badge{
+  font-size:9px;padding:3px 8px;border-radius:3px;
+  background:rgba(94,234,212,0.12);border:1px solid rgba(94,234,212,0.25);
+  color:var(--cyan);letter-spacing:0.1em;
+}
+.pdf-modal-close{
+  background:transparent;border:1px solid rgba(94,234,212,0.4);
+  color:var(--cyan);width:30px;height:30px;border-radius:6px;
+  cursor:pointer;font-size:14px;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:background 0.2s,border-color 0.2s;
+}
+.pdf-modal-close:hover{background:var(--cyan);color:var(--bg);border-color:var(--cyan)}
+.pdf-modal iframe{
+  flex:1;border:none;background:#fff;width:100%;
+}
 
 /* Number badge */
 .proj-num{
@@ -942,7 +1022,17 @@ footer a{color:var(--cyan);text-decoration:none}
 .hamburger { display: none; background: none; border: none; color: var(--cyan); font-size: 24px; cursor: pointer; }
 .nav-links.active { display: flex !important; }
 @media(max-width:900px){
-  nav{padding:16px 24px; position: relative;}
+  /* Fully transparent — nav blends with the hero, no distinct band. */
+  nav{
+    padding:14px 20px;
+    position:relative;
+    background:transparent;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+    border-bottom:none;
+  }
+  /* Skip the .scrolled darkening on mobile — nav scrolls away with hero. */
+  nav.scrolled{ background:transparent; backdrop-filter:none; border-bottom-color:transparent; }
   .hamburger { display: block; }
   .nav-resume { display: none; }
   .nav-links{display:none; position:absolute; top:60px; left:0; width:100%; background:rgba(0,0,6,0.96); padding:20px; flex-direction:column; border-bottom: 1px solid rgba(94, 234, 212, 0.2); z-index: 100;}
@@ -992,6 +1082,20 @@ footer a{color:var(--cyan);text-decoration:none}
   .project-card{padding:20px}
 }
 </style>
+
+<!-- ═══════════════════════════════════════════════════════════
+   GOOGLE ANALYTICS 4
+   Replace G-XXXXXXXXXX with your real GA4 Measurement ID.
+   Get it at analytics.google.com → Admin → Data Streams → your stream.
+   While the placeholder is in place, no data is sent (Google ignores it).
+═══════════════════════════════════════════════════════════ -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX', { 'anonymize_ip': true });
+</script>
 </head>
 <body>
 
@@ -1277,21 +1381,27 @@ footer a{color:var(--cyan);text-decoration:none}
       </svg>
     </div>
 
-    <!-- Project 1 — Tennis Analytics Database -->
+    <!-- Project 1 — BookedOut (Paris Airbnb) -->
     <div class="project-row sr">
       <div class="project-card glass-cyan">
         <div class="proj-flip-inner">
           <div class="proj-face proj-front">
-            <div class="project-minivis"><canvas id="pv0" width="400" height="140"></canvas></div>
-            <div class="proj-num">01 / Tennis Analytics Database</div>
-            <div class="proj-title">End-to-End Relational DB — ERD to Cloud on AWS Aurora</div>
-            <div class="proj-tags"><span class="proj-tag">MySQL</span><span class="proj-tag">AWS Aurora</span><span class="proj-tag">MySQL Workbench</span><span class="proj-tag">ERD</span><span class="proj-tag">Normalization</span><span class="proj-tag">SQL Analytics</span></div>
-            <div style="margin-top:10px;font-family:var(--font-mono);font-size:10px;color:rgba(94,234,212,0.4);letter-spacing:0.08em">MSBA TERM 1 · AUG–OCT 2025</div>
+            <div class="project-minivis"><canvas id="pv0" width="400" height="170"></canvas></div>
+            <div class="proj-num">01 / BookedOut — Paris Airbnb</div>
+            <div class="proj-title">Predictive Modeling + Causal Inference for Investor Strategy</div>
+            <div class="proj-tags"><span class="proj-tag">Python</span><span class="proj-tag">R</span><span class="proj-tag">LightGBM</span><span class="proj-tag">XGBoost</span><span class="proj-tag">CatBoost</span><span class="proj-tag">PSM</span><span class="proj-tag">Logistic Regression</span></div>
+            <div style="margin-top:10px;font-family:var(--font-mono);font-size:10px;color:rgba(94,234,212,0.4);letter-spacing:0.08em">MSBA · SPRING 2026</div>
             <span class="proj-flip-cue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>VIEW DETAILS</span>
           </div>
           <div class="proj-face proj-back">
-            <p class="proj-desc">Designed and deployed a fully normalized relational database for professional tennis match data — ERD through to production on AWS Aurora. Four entities (players, matches, rankings, tournaments) with clean normalization so every fact lives in exactly one place. Ran SQL analytics on ranking trajectories, win rates, and match stats by age group to identify the prime performance window for professional players — the Moneyball lens applied to tennis.</p>
-            <button class="proj-back-btn" type="button">↺ Back to card</button>
+            <p class="proj-desc">Analyzed 4,391 Paris listings (17e arrondissement) to produce an investor recommendation backed by predictive modeling and causal inference. LightGBM + XGBoost + CatBoost ensemble hit AUC 0.861 — a +10.1% lift over baseline, finishing #2 on the Kaggle leaderboard. The entire gain came from feature engineering (NA flags, availability ratios, log-price-vs-neighborhood-median), not algorithm choice. Propensity Score Matching isolated the +12.4pp causal lift of flexible cancellation, and revealed that Superhost status only hurts bookings because of pricing — three independent methods (logit, PSM, XGBoost) converged on north Batignolles, $85/night, flexible cancellation, entire apartment.</p>
+            <div class="proj-actions">
+              <button class="proj-present-btn" type="button" onclick="openPresentation('assets/presentations/01-bookedout.pdf', 'BookedOut — Paris Airbnb')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                VIEW PRESENTATION
+              </button>
+              <button class="proj-back-btn" type="button">↺ Back</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1299,41 +1409,111 @@ footer a{color:var(--cyan);text-decoration:none}
       <div class="project-spacer"></div>
     </div>
 
-    <!-- Project 2 — Diabetes Risk Prediction -->
+    <!-- Project 2 — NBA Expansion Optimization -->
     <div class="project-row sr d1">
       <div class="project-spacer"></div>
       <div class="project-connector"><div class="p-dot"></div></div>
       <div class="project-card glass-violet">
         <div class="proj-flip-inner">
           <div class="proj-face proj-front">
-            <div class="project-minivis"><canvas id="pv1" width="400" height="140"></canvas></div>
-            <div class="proj-num">02 / Diabetes Risk Prediction</div>
-            <div class="proj-title">ML-Powered Healthcare Risk Stratification</div>
+            <div class="project-minivis"><canvas id="pv1" width="400" height="170"></canvas></div>
+            <div class="proj-num">02 / NBA Expansion Optimization</div>
+            <div class="proj-title">ILP + Nash Bargaining Across 15 City Pairings</div>
+            <div class="proj-tags"><span class="proj-tag">Integer Linear Programming</span><span class="proj-tag">Nash Bargaining</span><span class="proj-tag">ANOVA</span><span class="proj-tag">R</span></div>
+            <div style="margin-top:10px;font-family:var(--font-mono);font-size:10px;color:rgba(94,234,212,0.4);letter-spacing:0.08em">MSBA · SPRING 2026</div>
+            <span class="proj-flip-cue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>VIEW DETAILS</span>
+          </div>
+          <div class="proj-face proj-back">
+            <p class="proj-desc">Evaluated all 15 possible two-city pairings for the NBA's growth to 32 teams using two complementary ILP models. Validated Theory Distance — a schedule-invariant travel proxy — against 14 years of actual NBA travel data via ANOVA (F=163.3, p&lt;0.001). Travel-only minimization picked Tampa + Montreal at 72,659 mi (32,304 mi better than worst). Nash Bargaining (travel + revenue) shifted the top pick to Montreal + Mexico City at &lt;0.001% efficiency loss. Montreal is the universal pick — the real tradeoff is Tampa (efficiency) vs. Mexico City (market scale).</p>
+            <div class="proj-actions">
+              <button class="proj-present-btn" type="button" onclick="openPresentation('assets/presentations/02-nba-expansion.pdf', 'NBA Expansion Optimization')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                VIEW PRESENTATION
+              </button>
+              <button class="proj-back-btn" type="button">↺ Back</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project 3 — Airline Tweet Sentiment -->
+    <div class="project-row sr d2">
+      <div class="project-card glass-cyan">
+        <div class="proj-flip-inner">
+          <div class="proj-face proj-front">
+            <div class="project-minivis"><canvas id="pv2" width="400" height="170"></canvas></div>
+            <div class="proj-num">03 / Airline Tweet Sentiment</div>
+            <div class="proj-title">NLP Pipeline for Customer-Service Routing</div>
+            <div class="proj-tags"><span class="proj-tag">Python</span><span class="proj-tag">R</span><span class="proj-tag">TF-IDF</span><span class="proj-tag">XGBoost</span><span class="proj-tag">Lasso</span><span class="proj-tag">LDA</span><span class="proj-tag">K-Means</span></div>
+            <div style="margin-top:10px;font-family:var(--font-mono);font-size:10px;color:rgba(94,234,212,0.4);letter-spacing:0.08em">MSBA · SPRING 2026</div>
+            <span class="proj-flip-cue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>VIEW DETAILS</span>
+          </div>
+          <div class="proj-face proj-back">
+            <p class="proj-desc">End-to-end NLP classifier on 14,640 airline tweets, designed around the asymmetric cost of missing a viral complaint. TF-IDF + Lasso (λ=0.01) reached F1=0.814; XGBoost at threshold 0.30 caught 99.7% of negative tweets. TF-IDF beat Bag-of-Words on recall (0.973 vs 0.825) by suppressing universal terms like "flight". LDA (k=3) split complaints into Customer Service, Cancellations, and Baggage themes, with K-Means then segmenting riders into operational profiles. A few-shot LLM with explicit sarcasm rules hit 100% on the 20-tweet edge-case set.</p>
+            <div class="proj-actions">
+              <button class="proj-present-btn" type="button" onclick="openPresentation('assets/presentations/03-airline-sentiment.pdf', 'Airline Tweet Sentiment')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                VIEW PRESENTATION
+              </button>
+              <button class="proj-back-btn" type="button">↺ Back</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="project-connector"><div class="p-dot"></div></div>
+      <div class="project-spacer"></div>
+    </div>
+
+    <!-- Project 4 — Diabetes Risk Prediction -->
+    <div class="project-row sr d1">
+      <div class="project-spacer"></div>
+      <div class="project-connector"><div class="p-dot"></div></div>
+      <div class="project-card glass-violet">
+        <div class="proj-flip-inner">
+          <div class="proj-face proj-front">
+            <div class="project-minivis"><canvas id="pv3" width="400" height="170"></canvas></div>
+            <div class="proj-num">04 / Diabetes Risk Prediction</div>
+            <div class="proj-title">ML Risk Stratification on 253K CDC Records</div>
             <div class="proj-tags"><span class="proj-tag">Python</span><span class="proj-tag">Logistic Regression</span><span class="proj-tag">Random Forest</span><span class="proj-tag">KNN</span><span class="proj-tag">SVM</span><span class="proj-tag">Scikit-learn</span></div>
+            <div style="margin-top:10px;font-family:var(--font-mono);font-size:10px;color:rgba(94,234,212,0.4);letter-spacing:0.08em">MSBA · JAN–MAR 2026</div>
             <span class="proj-flip-cue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>VIEW DETAILS</span>
           </div>
           <div class="proj-face proj-back">
-            <p class="proj-desc">Built a classification model on 253K+ CDC BRFSS records using 21 health indicators; optimized for at-risk recall as the primary clinical metric. Conducted threshold tuning, worst-case error analysis, and age-group robustness checks — Random Forest selected as the final model for its best balance of recall, accuracy, and interpretable variable importance.</p>
-            <button class="proj-back-btn" type="button">↺ Back to card</button>
+            <p class="proj-desc">Six-model classification pipeline on CDC BRFSS using 21 self-reported indicators — no lab tests required. The instructive finding: SVM topped accuracy (84.5%) but had the worst at-risk recall (8.3%) — exactly the opposite of what the clinical cost structure requires. Selected Random Forest at threshold 0.70 instead: 49.4% at-risk recall, 87.1% specificity. Top predictors were General Health, BMI, Age, High BP, High Cholesterol. Error analysis showed the 18–39 bracket has only 30% recall (vs 50% for 60+) — motivating age-stratified models as the next step.</p>
+            <div class="proj-actions">
+              <button class="proj-present-btn" type="button" onclick="openPresentation('assets/presentations/04-diabetes-risk.pdf', 'Diabetes Risk Prediction')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                VIEW PRESENTATION
+              </button>
+              <button class="proj-back-btn" type="button">↺ Back</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Project 3 — Supply Chain Optimization -->
+    <!-- Project 5 — Supply Chain Optimization -->
     <div class="project-row sr d2">
       <div class="project-card glass-cyan">
         <div class="proj-flip-inner">
           <div class="proj-face proj-front">
-            <div class="project-minivis"><canvas id="pv2" width="400" height="140"></canvas></div>
-            <div class="proj-num">03 / Supply Chain Optimization</div>
+            <div class="project-minivis"><canvas id="pv4" width="400" height="170"></canvas></div>
+            <div class="proj-num">05 / Supply Chain Optimization</div>
             <div class="proj-title">19-Plant · 10-Port LP Cost Minimization Model</div>
-            <div class="proj-tags"><span class="proj-tag">Excel Solver</span><span class="proj-tag">Linear Programming</span><span class="proj-tag">Sensitivity Analysis</span><span class="proj-tag">Operations Research</span></div>
+            <div class="proj-tags"><span class="proj-tag">Excel Solver</span><span class="proj-tag">Linear Programming</span><span class="proj-tag">Sensitivity Analysis</span><span class="proj-tag">Shadow Prices</span></div>
+            <div style="margin-top:10px;font-family:var(--font-mono);font-size:10px;color:rgba(94,234,212,0.4);letter-spacing:0.08em">MSBA · JAN–MAR 2026</div>
             <span class="proj-flip-cue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>VIEW DETAILS</span>
           </div>
           <div class="proj-face proj-back">
-            <p class="proj-desc">Developed an LP optimization model for a 19-plant, 10-port supply chain minimizing daily logistics cost using Excel Solver. Performed bottleneck and sensitivity analysis (shadow prices). Identified a single-port bottleneck through scenario analysis — targeted investment recommendations delivered greater cost savings than broad network changes.</p>
-            <button class="proj-back-btn" type="button">↺ Back to card</button>
+            <p class="proj-desc">190-variable LP minimizing total landed cost across a 19-plant, 10-port network. Optimal solution: 4,057 units/day at 70% utilization, $466K total ($299K production + $167K shipping). Shadow prices revealed the network is port-constrained, not plant-constrained: PORT04 expansion adds 1,063 units/day vs PORT02's 383 — 2.8× ROI per unit of investment. The PLANT07 paradox: the cheapest plant in the network ($0.37/unit) produces zero output because its only downstream port (PORT02) is completely full. Cost-only or capacity-only analysis would have missed this entirely.</p>
+            <div class="proj-actions">
+              <button class="proj-present-btn" type="button" onclick="openPresentation('assets/presentations/05-supply-chain.pdf', 'Supply Chain Optimization')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                VIEW PRESENTATION
+              </button>
+              <button class="proj-back-btn" type="button">↺ Back</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1341,41 +1521,55 @@ footer a{color:var(--cyan);text-decoration:none}
       <div class="project-spacer"></div>
     </div>
 
-    <!-- Project 4 — VAR Monetary Policy -->
+    <!-- Project 6 — VAR Monetary Policy -->
     <div class="project-row sr d1">
       <div class="project-spacer"></div>
       <div class="project-connector"><div class="p-dot"></div></div>
       <div class="project-card glass-violet">
         <div class="proj-flip-inner">
           <div class="proj-face proj-front">
-            <div class="project-minivis"><canvas id="pv3" width="400" height="140"></canvas></div>
-            <div class="proj-num">04 / VAR Monetary Policy Analysis</div>
-            <div class="proj-title">Vector Autoregression for Economic Indicators</div>
-            <div class="proj-tags"><span class="proj-tag">R</span><span class="proj-tag">VAR Models</span><span class="proj-tag">Granger Causality</span><span class="proj-tag">IRF</span><span class="proj-tag">FEVD</span></div>
+            <div class="project-minivis"><canvas id="pv5" width="400" height="170"></canvas></div>
+            <div class="proj-num">06 / VAR Monetary Policy Analysis</div>
+            <div class="proj-title">Vector Autoregression for Fed–Inflation–Unemployment Dynamics</div>
+            <div class="proj-tags"><span class="proj-tag">Python</span><span class="proj-tag">R</span><span class="proj-tag">VAR</span><span class="proj-tag">ADF/KPSS</span><span class="proj-tag">Granger Causality</span><span class="proj-tag">IRF</span><span class="proj-tag">FEVD</span></div>
+            <div style="margin-top:10px;font-family:var(--font-mono);font-size:10px;color:rgba(94,234,212,0.4);letter-spacing:0.08em">MSBA · JAN–MAR 2026</div>
             <span class="proj-flip-cue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>VIEW DETAILS</span>
           </div>
           <div class="proj-face proj-back">
-            <p class="proj-desc">Modeled Unemployment, Federal Funds Rate, and Inflation using VAR on 752 monthly observations (1954–2017); confirmed all three monetary channels via Granger causality (p &lt; 0.001). Applied IRF and FEVD to show policy effects build over 6–18 months, with cross-variable influences explaining 30–40% of forecast uncertainty at 24 months.</p>
-            <button class="proj-back-btn" type="button">↺ Back to card</button>
+            <p class="proj-desc">Modeled the dynamic feedback between Federal Funds Rate, Unemployment, and Inflation on 752 monthly observations (1954–2017). Validated VAR estimation on simulated data with a known coefficient matrix first, then fit VAR(3) on first-differenced series (BIC-selected). Granger causality confirmed all three monetary channels (EFFR → unemployment, F=8.89, p=1.3e-9). FEVD revealed inflation is the most externally driven variable — at 24 months, EFFR + unemployment together explain &gt;40% of its forecast variance. IRFs showed delayed, persistent effects consistent with known monetary transmission lags.</p>
+            <div class="proj-actions">
+              <button class="proj-present-btn" type="button" onclick="openPresentation('assets/presentations/06-var-policy.pdf', 'VAR Monetary Policy')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                VIEW PRESENTATION
+              </button>
+              <button class="proj-back-btn" type="button">↺ Back</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Project 5 — IMDb Movies -->
+    <!-- Project 7 — Uber vs Ola Reviews -->
     <div class="project-row sr d2">
       <div class="project-card glass-cyan">
         <div class="proj-flip-inner">
           <div class="proj-face proj-front">
-            <div class="project-minivis"><canvas id="pv4" width="400" height="140"></canvas></div>
-            <div class="proj-num">05 / IMDb Top 1000 Movies Analytics</div>
-            <div class="proj-title">Revenue & Rating Drivers — EDA, NLP & Regression</div>
-            <div class="proj-tags"><span class="proj-tag">Python</span><span class="proj-tag">NLP</span><span class="proj-tag">Tableau</span><span class="proj-tag">EDA</span><span class="proj-tag">Regression</span></div>
+            <div class="project-minivis"><canvas id="pv6" width="400" height="170"></canvas></div>
+            <div class="proj-num">07 / Uber vs Ola Review Comparison</div>
+            <div class="proj-title">1.7M Indian Rider Reviews · Sentiment + Topic Modeling</div>
+            <div class="proj-tags"><span class="proj-tag">Python</span><span class="proj-tag">R</span><span class="proj-tag">Bing Lexicon</span><span class="proj-tag">LDA</span><span class="proj-tag">Logistic Regression</span></div>
+            <div style="margin-top:10px;font-family:var(--font-mono);font-size:10px;color:rgba(94,234,212,0.4);letter-spacing:0.08em">MSBA · OCT–DEC 2025</div>
             <span class="proj-flip-cue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>VIEW DETAILS</span>
           </div>
           <div class="proj-face proj-back">
-            <p class="proj-desc">Scraped and cleaned IMDb Top 1000 movies data, engineering features such as year, runtime, decade, main genre, votes, revenue, description length, and sentiment. Performed exploratory, bivariate, and multivariate analysis with Tableau visualizations; built a regression model to predict revenue from ratings, votes, runtime, and text features.</p>
-            <button class="proj-back-btn" type="button">↺ Back to card</button>
+            <p class="proj-desc">Analyzed 1.7M Indian rider reviews to go beyond star ratings. Bing lexicon sentiment: Ola is 66.55% negative; Uber is 52.73% positive — the only platform with a majority positive balance. Ola reviewers also write longer reviews at every star level (dissatisfied customers elaborate). LDA (k=5) surfaced 5 complaint themes; "driver" was the #1 negative term on both platforms — driver quality is the shared pain point of the Indian ride-hailing market. Logistic regression with sentiment + length + company gave Uber an OR of ≈2.70 (p&lt;2e-16) — the platform difference is real after fully controlling for text content.</p>
+            <div class="proj-actions">
+              <button class="proj-present-btn" type="button" onclick="openPresentation('assets/presentations/07-uber-vs-ola.pdf', 'Uber vs Ola Review Comparison')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                VIEW PRESENTATION
+              </button>
+              <button class="proj-back-btn" type="button">↺ Back</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1383,41 +1577,55 @@ footer a{color:var(--cyan);text-decoration:none}
       <div class="project-spacer"></div>
     </div>
 
-    <!-- Project 6 — Uber vs Ola -->
+    <!-- Project 8 — Tennis Analytics Database -->
     <div class="project-row sr d1">
       <div class="project-spacer"></div>
       <div class="project-connector"><div class="p-dot"></div></div>
       <div class="project-card glass-violet">
         <div class="proj-flip-inner">
           <div class="proj-face proj-front">
-            <div class="project-minivis"><canvas id="pv5" width="400" height="140"></canvas></div>
-            <div class="proj-num">06 / Uber vs Ola Review Analysis</div>
-            <div class="proj-title">NLP Sentiment & Complaint Pattern Mining</div>
-            <div class="proj-tags"><span class="proj-tag">R</span><span class="proj-tag">Text Mining</span><span class="proj-tag">LDA</span><span class="proj-tag">Logistic Regression</span><span class="proj-tag">Power BI</span></div>
+            <div class="project-minivis"><canvas id="pv7" width="400" height="170"></canvas></div>
+            <div class="proj-num">08 / Tennis Analytics Database</div>
+            <div class="proj-title">End-to-End Relational DB — ERD → AWS Aurora → SQL Analytics</div>
+            <div class="proj-tags"><span class="proj-tag">MySQL</span><span class="proj-tag">AWS Aurora</span><span class="proj-tag">ERD</span><span class="proj-tag">CTEs</span><span class="proj-tag">Window Functions</span><span class="proj-tag">EXISTS Subqueries</span></div>
+            <div style="margin-top:10px;font-family:var(--font-mono);font-size:10px;color:rgba(94,234,212,0.4);letter-spacing:0.08em">MSBA · AUG–OCT 2025</div>
             <span class="proj-flip-cue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>VIEW DETAILS</span>
           </div>
           <div class="proj-face proj-back">
-            <p class="proj-desc">Analyzed 1.4M+ Google Play reviews for Uber and Ola in India, performing large-scale data cleaning, sentiment analysis, and keyword-based issue tagging (price, driver, cancellations, safety). Applied LDA topic modeling and logistic regression to uncover key complaint themes; visualized results with Power BI.</p>
-            <button class="proj-back-btn" type="button">↺ Back to card</button>
+            <p class="proj-desc">Designed and deployed a 7-entity normalized WTA database from ERD through production on AWS Aurora — Moneyball question: at what age do women's pros peak? Replaced composite (tourney_id, match_num) keys with a synthetic match_id, and parsed multi-valued score strings ("6-4 3-6 7-6") into individual set rows. SQL analytics used CTEs, UNION ALL to stack winners/losers, ROW_NUMBER() for ranking progression, TIMESTAMPDIFF for age-at-match, EXISTS subqueries for comeback detection. Prime window: 24–26 (53.37% win rate). Young players (≤20) generate the highest upset rate (37.96%); veterans dominate aces and break points saved.</p>
+            <div class="proj-actions">
+              <button class="proj-present-btn" type="button" onclick="openPresentation('assets/presentations/08-tennis-analytics.pdf', 'Tennis Analytics Database')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                VIEW PRESENTATION
+              </button>
+              <button class="proj-back-btn" type="button">↺ Back</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Project 7 — Image Steganography -->
+    <!-- Project 9 — IMDb Movies -->
     <div class="project-row sr d2">
       <div class="project-card glass-cyan">
         <div class="proj-flip-inner">
           <div class="proj-face proj-front">
-            <div class="project-minivis"><canvas id="pv7" width="400" height="140"></canvas></div>
-            <div class="proj-num">07 / Image Steganography</div>
-            <div class="proj-title">Hidden Data Encoding in Pixel Space</div>
-            <div class="proj-tags"><span class="proj-tag">Python</span><span class="proj-tag">OpenCV</span><span class="proj-tag">Cryptography</span><span class="proj-tag">Signal Processing</span></div>
+            <div class="project-minivis"><canvas id="pv8" width="400" height="170"></canvas></div>
+            <div class="proj-num">09 / IMDb Top 1000 Movies Analytics</div>
+            <div class="proj-title">Revenue Drivers — EDA, NLP & Regression</div>
+            <div class="proj-tags"><span class="proj-tag">Python</span><span class="proj-tag">pandas</span><span class="proj-tag">Regression</span><span class="proj-tag">TextBlob</span><span class="proj-tag">Matplotlib</span></div>
+            <div style="margin-top:10px;font-family:var(--font-mono);font-size:10px;color:rgba(94,234,212,0.4);letter-spacing:0.08em">MSBA · OCT–DEC 2025</div>
             <span class="proj-flip-cue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>VIEW DETAILS</span>
           </div>
           <div class="proj-face proj-back">
-            <p class="proj-desc">LSB steganography system encoding messages in image pixel values with imperceptible visual change. Implements encryption layer and PSNR analysis to measure image fidelity after encoding.</p>
-            <button class="proj-back-btn" type="button">↺ Back to card</button>
+            <p class="proj-desc">8-step cleaning pipeline (regex year extraction, duration/votes/gross parsing) + feature engineering on 1,000 IMDb films. Regression for box office reached R²=0.451 and RMSE=$92.4M; the two most striking coefficients told a story — votes (engagement) is the strongest positive predictor (+265), while IMDb score is strongly negative (−248). A blockbuster with a 7.5 rating outearns a critically acclaimed 9.0. The 1980s vs 2010s comparison revealed the "Top 1000" is heavily skewed toward recent releases (290 vs 31 films) — recency inflates the count without improving the quality.</p>
+            <div class="proj-actions">
+              <button class="proj-present-btn" type="button" onclick="openPresentation('assets/presentations/09-imdb-movies.pdf', 'IMDb Top 1000 Movies')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                VIEW PRESENTATION
+              </button>
+              <button class="proj-back-btn" type="button">↺ Back</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1468,7 +1676,27 @@ footer a{color:var(--cyan);text-decoration:none}
 <footer>
   <p>Designed & built by <a href="#">Kamalesh Kumar</a> · UNH Business Analytics · 2025</p>
   <p style="color:var(--dim)">Made with data, code & curiosity</p>
+  <p style="color:var(--dim);font-size:10px;margin-top:6px;letter-spacing:0.04em">
+    This site uses anonymous analytics — no personal data collected.
+  </p>
 </footer>
+
+<!-- ═══════════════════════════════════════════════════════════
+   PDF VIEWER MODAL  (view-only — toolbar suppressed, right-click blocked)
+═══════════════════════════════════════════════════════════════ -->
+<div id="pdf-modal" class="pdf-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="pdf-modal-title">
+  <div class="pdf-modal-overlay" data-close="1"></div>
+  <div class="pdf-modal-content">
+    <div class="pdf-modal-header">
+      <div class="pdf-modal-title">
+        <span class="pdf-modal-badge">VIEW ONLY</span>
+        <span id="pdf-modal-title">Presentation</span>
+      </div>
+      <button class="pdf-modal-close" type="button" data-close="1" aria-label="Close presentation">✕</button>
+    </div>
+    <iframe id="pdf-modal-iframe" src="" title="Presentation viewer"></iframe>
+  </div>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════════
    ALL JAVASCRIPT
@@ -1480,6 +1708,33 @@ footer a{color:var(--cyan);text-decoration:none}
 const IS_TOUCH    = window.matchMedia('(hover: none), (pointer: coarse)').matches;
 const REDUCE_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_MOBILE   = window.innerWidth <= 900;
+
+/* ─────────────────────────────
+   VISIT TRACKING (anonymous)
+   Fires once per page load. POSTs browser metadata to the Render
+   backend, which looks up the IP's city/country and emails the owner.
+   Visitor never sees anything — fully silent. Failures are swallowed
+   so a backend hiccup never breaks the page.
+───────────────────────────── */
+(function trackVisit() {
+  /* Bots and crawlers — skip. Saves emails on irrelevant traffic. */
+  if (/bot|crawl|spider|preview|headless/i.test(navigator.userAgent)) return;
+  try {
+    fetch('https://portfolio-backend-8sbr.onrender.com/api/visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_agent: navigator.userAgent,
+        referrer:   document.referrer || '',
+        screen:     `${screen.width}x${screen.height}`,
+        language:   navigator.language || '',
+        timezone:   (Intl.DateTimeFormat().resolvedOptions().timeZone) || '',
+        path:       location.pathname + location.search,
+      }),
+      keepalive: true,        /* lets the request finish even if the user navigates away */
+    }).catch(() => {});       /* silent fail */
+  } catch (e) { /* never let analytics break the page */ }
+})();
 
 /* Helper: only run a rAF loop while `el` is visible in viewport (battery saver). */
 function visibleRAF(el, frameFn) {
@@ -1512,6 +1767,17 @@ if (!IS_TOUCH) {
   const cursor = document.getElementById('cursor');
   const cursorRing = document.getElementById('cursor-ring');
   if (cursor && cursorRing) {
+    /* Belt-and-suspenders: DevTools mobile emulators and some hybrid
+       browsers don't match (pointer:coarse), so the CSS rule misses.
+       The first real touch event proves it's a touch device — kill the
+       cursor permanently then. */
+    const killCursorOnTouch = () => {
+      cursor.remove();
+      cursorRing.remove();
+      window.removeEventListener('touchstart', killCursorOnTouch);
+    };
+    window.addEventListener('touchstart', killCursorOnTouch, { once: true, passive: true });
+
     let mx = 0, my = 0, rx = 0, ry = 0;
     document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
     (function animCursor() {
@@ -1719,6 +1985,10 @@ window.addEventListener('scroll', () => {
   const RW = 18, RH = 21;
   let totalLen = 0;
   let waypoints = [];
+  /* Path samples: { len, y } pairs, used to find the path-length whose Y
+     matches the user's viewport center. This is what keeps the rocket
+     glued to your eye level instead of racing ahead of the scroll. */
+  let ySamples = [];
 
   /* Build a curvy Bezier path through all project card centers, with
      a touch of random horizontal jitter on the control points so the
@@ -1790,6 +2060,17 @@ window.addEventListener('scroll', () => {
     path.setAttribute('d', d);
     totalLen = path.getTotalLength();
 
+    /* Sample the path so we can later look up "what path-length is at
+       this Y?" — used for eye-tied positioning. 300 samples is plenty
+       for a smooth lookup. */
+    ySamples = [];
+    const N = 300;
+    for (let i = 0; i <= N; i++){
+      const len = (i / N) * totalLen;
+      const pt  = path.getPointAtLength(len);
+      ySamples.push({ len, y: pt.y });
+    }
+
     /* Hide the trail entirely until the rocket gets there — we mask it
        by drawing the dashed segment beyond the rocket completely
        transparent via a stroke-dashoffset trick. We do this each frame
@@ -1797,44 +2078,52 @@ window.addEventListener('scroll', () => {
     path.style.strokeDasharray = '6 8';
   }
 
-  /* Compute progress 0..1 based on how far the user has scrolled through
-     the projects section (section, not pipeline — so the rocket already
-     starts moving when the title enters view). 0 when the top of the
-     section reaches the bottom of the viewport; 1 when the bottom of
-     the section reaches the top. */
-  function getProgress(){
-    const section = pipeline.closest('section') || pipeline;
-    const rect = section.getBoundingClientRect();
-    const vh = window.innerHeight;
-    const total = rect.height + vh;
-    const traveled = vh - rect.top;
-    return Math.max(0, Math.min(1, traveled / total));
+  /* Map a target Y (in pipeline coords) to a path-length. Path Y is
+     roughly monotonic top→bottom, so a forward scan across samples is
+     enough. Linearly interpolate between the two bracketing samples. */
+  function pathLenAtY(y){
+    if (!ySamples.length) return 0;
+    if (y <= ySamples[0].y) return ySamples[0].len;
+    if (y >= ySamples[ySamples.length - 1].y) return ySamples[ySamples.length - 1].len;
+    for (let i = 1; i < ySamples.length; i++){
+      if (ySamples[i].y >= y){
+        const a = ySamples[i - 1], b = ySamples[i];
+        const t = (y - a.y) / (b.y - a.y || 1);
+        return a.len + t * (b.len - a.len);
+      }
+    }
+    return ySamples[ySamples.length - 1].len;
   }
 
-  /* Mask the trail beyond the rocket using a second invisible
-     stroke-dashoffset technique: we override dasharray so the visible
-     dashed pattern only covers [0, traveled], and everything past that
-     is one giant gap. */
+  /* Place the rocket at the path-point whose Y matches the user's
+     viewport center. This is the key fix: instead of mapping overall
+     scroll-progress to path-progress (which races ahead of the eye on
+     long pages), we directly tie the rocket to where you're looking.
+     Result: as you scroll, the rocket dives into each card right at
+     the card's top edge and emerges in the gap below. */
   function update(){
     if (!totalLen) return;
-    const progress = getProgress();
-    /* Light "gate" — only show rocket while inside the section range. */
-    const section = pipeline.closest('section') || pipeline;
-    const rect = section.getBoundingClientRect();
-    const inView = rect.bottom > 0 && rect.top < window.innerHeight;
+    const section  = pipeline.closest('section') || pipeline;
+    const sRect    = section.getBoundingClientRect();
+    const vh       = window.innerHeight;
+    const inView   = sRect.bottom > 0 && sRect.top < vh;
     if (!inView) { rocket.style.opacity = '0'; return; }
 
-    const traveled = progress * totalLen;
-    /* Reveal trail up to `traveled`, hide the rest by extending the gap. */
+    /* User's eye, in pipeline-local coordinates (the path lives there). */
+    const pRect = pipeline.getBoundingClientRect();
+    const eyeY  = vh / 2 - pRect.top;
+    const traveled = pathLenAtY(eyeY);
+
+    /* Trail visible up to `traveled`, hidden after. */
     path.style.strokeDasharray = `${traveled} ${totalLen + 10}`;
 
-    /* Rocket position + rotation */
+    /* Rocket position + rotation (sample slightly ahead for tangent). */
     const p   = path.getPointAtLength(traveled);
     const eps = Math.min(2, totalLen - traveled);
     const p2  = path.getPointAtLength(Math.max(0, traveled - 0.0001) + eps);
     const ang = Math.atan2(p2.x - p.x, -(p2.y - p.y)) * 180 / Math.PI;
     rocket.style.transform = `translate(${p.x - RW}px, ${p.y - RH}px) rotate(${ang}deg)`;
-    rocket.style.opacity = (progress > 0.001 && progress < 0.999) ? '1' : '0.5';
+    rocket.style.opacity = '1';
   }
 
   let raf = null;
@@ -2029,39 +2318,43 @@ drawHoloSQL('holo-sql');
   const cx = SIZE / 2, cy = SIZE / 2;
   const ctx = canvas.getContext('2d');
 
-  // Orbital radii (proportional to canvas size)
-  const r1 = SIZE * 0.195;   // inner  — Python (Mercury), SQL (Venus)
-  const r2 = SIZE * 0.305;   // middle — ML (Earth), Tableau (Mars), Power BI (Jupiter)
-  const r3 = SIZE * 0.38;    // outer  — R Stats (Saturn), AWS (Uranus), EDA (Neptune)
-
-  // Planet definitions — each skill is themed as its real-solar-system
-  // counterpart: colors and relative sizes echo the actual planet.
-  // lit=highlight rim, mid=body, dark=shadow side.
-  // On narrow screens we shrink planet sizes and drop two of the outer
-  // planets so the orbits don't feel cramped.
+  // Each planet on its OWN orbital ring — proper solar-system structure.
+  // Spacing is artistic-not-literal (real ratios put Mercury inside the
+  // sun visually) but ordering matches: Mercury closest, Neptune furthest.
   const NARROW = SIZE < 360;
   const SCALE_R = NARROW ? 0.78 : 1;
+  // Eight distinct orbital radii as a fraction of canvas size.
+  const ORBIT_FRAC = [0.135, 0.180, 0.225, 0.275, 0.330, 0.390, 0.435, 0.478];
+  const orbits = ORBIT_FRAC.map(f => SIZE * f);
+
+  // Kepler's 3rd law (loosely): farther planets orbit slower. Speed ∝
+  // 1/√r, calibrated so Mercury still moves at 0.0060 like before.
+  const baseR = orbits[0];
+  const baseSpeed = 0.0060;
+  const keplerSpeed = (r) => baseSpeed * Math.sqrt(baseR / r);
+
+  // Planet definitions — each skill themed as its solar-system counterpart.
+  // lit=highlight rim, mid=body, dark=shadow side. Sizes are downscaled
+  // (Jupiter especially) so each planet fits within its orbital lane.
+  // On narrow screens we drop the two outermost planets and shrink everything.
   const planets = [
-    // ── Inner orbit ─ rocky planets ─────────────────────────
-    // Mercury (Python) — small, gray-tan, cratered
-    { label:'Python',   orbit:r1, speed:0.0060, phase:0,            lit:'#c5b9a7', mid:'#8c7d6b', dark:'#3a2f24', r:11*SCALE_R, ring:false, tex:'mercury' },
-    // Venus (SQL) — pale cream, dense atmosphere
-    { label:'SQL',      orbit:r1, speed:0.0060, phase:Math.PI,      lit:'#fbecc4', mid:'#dcb780', dark:'#604528', r:14*SCALE_R, ring:false, tex:'venus' },
-    // ── Middle orbit ─ Earth, Mars, Jupiter (giant) ─────────
-    // Earth (ML) — ocean blue with green continents
-    { label:'ML',       orbit:r2, speed:0.0038, phase:0,            lit:'#a8d4f0', mid:'#3a78c0', dark:'#0c2640', r:15*SCALE_R, ring:false, tex:'earth' },
-    // Mars (Tableau) — rust red, polar ice
-    { label:'Tableau',  orbit:r2, speed:0.0038, phase:Math.PI*0.67, lit:'#f0c8a0', mid:'#c1502e', dark:'#4a1a0c', r:12*SCALE_R, ring:false, tex:'mars' },
-    // Jupiter (Power BI) — biggest planet, banded tan/cream
-    { label:'Power BI', orbit:r2, speed:0.0038, phase:Math.PI*1.33, lit:'#f0d8b0', mid:'#c9a86b', dark:'#5a3e20', r:24*SCALE_R, ring:false, tex:'jupiter' },
-    // ── Outer orbit ─ gas giants & ice giants ───────────────
-    // Saturn (R Stats) — pale gold with rings
-    { label:'R Stats',  orbit:r3, speed:0.0022, phase:0.4,          lit:'#f8e8c0', mid:'#d4b97f', dark:'#705840', r:18*SCALE_R, ring:true,  tex:'saturn' },
+    // ── Mercury (Python) — small, gray-tan, cratered
+    { label:'Python',   orbit:orbits[0], speed:keplerSpeed(orbits[0]), phase:0,            lit:'#c5b9a7', mid:'#8c7d6b', dark:'#3a2f24', r:8*SCALE_R,  ring:false, tex:'mercury' },
+    // ── Venus (SQL) — pale cream, dense atmosphere
+    { label:'SQL',      orbit:orbits[1], speed:keplerSpeed(orbits[1]), phase:Math.PI*0.45, lit:'#fbecc4', mid:'#dcb780', dark:'#604528', r:10*SCALE_R, ring:false, tex:'venus' },
+    // ── Earth (ML) — ocean blue with green continents
+    { label:'ML',       orbit:orbits[2], speed:keplerSpeed(orbits[2]), phase:Math.PI*0.85, lit:'#a8d4f0', mid:'#3a78c0', dark:'#0c2640', r:11*SCALE_R, ring:false, tex:'earth' },
+    // ── Mars (Tableau) — rust red, polar ice
+    { label:'Tableau',  orbit:orbits[3], speed:keplerSpeed(orbits[3]), phase:Math.PI*1.25, lit:'#f0c8a0', mid:'#c1502e', dark:'#4a1a0c', r:9*SCALE_R,  ring:false, tex:'mars' },
+    // ── Jupiter (Power BI) — biggest planet, banded tan/cream
+    { label:'Power BI', orbit:orbits[4], speed:keplerSpeed(orbits[4]), phase:Math.PI*1.65, lit:'#f0d8b0', mid:'#c9a86b', dark:'#5a3e20', r:16*SCALE_R, ring:false, tex:'jupiter' },
+    // ── Saturn (R Stats) — pale gold with rings
+    { label:'R Stats',  orbit:orbits[5], speed:keplerSpeed(orbits[5]), phase:0.3,          lit:'#f8e8c0', mid:'#d4b97f', dark:'#705840', r:13*SCALE_R, ring:true,  tex:'saturn' },
     ...(NARROW ? [] : [
-      // Uranus (AWS) — icy pale cyan
-      { label:'AWS',  orbit:r3, speed:0.0022, phase:Math.PI*0.72, lit:'#d8f0f5', mid:'#8ec5d4', dark:'#1e4048', r:17, ring:false, tex:'uranus' },
-      // Neptune (EDA) — deep azure blue
-      { label:'EDA',  orbit:r3, speed:0.0022, phase:Math.PI*1.44, lit:'#7ea0d8', mid:'#2545a8', dark:'#0a1840', r:17, ring:false, tex:'neptune' },
+      // ── Uranus (AWS) — icy pale cyan
+      { label:'AWS',    orbit:orbits[6], speed:keplerSpeed(orbits[6]), phase:Math.PI*0.7,  lit:'#d8f0f5', mid:'#8ec5d4', dark:'#1e4048', r:11,         ring:false, tex:'uranus' },
+      // ── Neptune (EDA) — deep azure blue
+      { label:'EDA',    orbit:orbits[7], speed:keplerSpeed(orbits[7]), phase:Math.PI*1.4,  lit:'#7ea0d8', mid:'#2545a8', dark:'#0a1840', r:11,         ring:false, tex:'neptune' },
     ]),
   ];
 
@@ -2244,15 +2537,17 @@ drawHoloSQL('holo-sql');
     ctx.arc(cx, cy, SIZE / 2 - 2, 0, Math.PI * 2);
     ctx.clip();
 
-    // ── Orbit rings (brighter, with glow) ────────────────────
-    [r1, r2, r3].forEach((r, i) => {
+    // ── Orbit rings — one per planet (proper solar-system layout).
+    // Slightly fade outer rings; subtle glow keeps them legible on the
+    // dark background without overwhelming the planets.
+    planets.forEach((p, i) => {
       ctx.save();
-      ctx.setLineDash([6, 14]);
-      ctx.strokeStyle = `rgba(200,180,255,${0.18 + i * 0.06})`;
-      ctx.lineWidth = 1;
-      ctx.shadowColor = 'rgba(180,140,255,0.35)';
-      ctx.shadowBlur = 5;
-      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+      ctx.setLineDash([5, 12]);
+      ctx.strokeStyle = `rgba(200,180,255,${0.14 + (i / planets.length) * 0.10})`;
+      ctx.lineWidth = 0.9;
+      ctx.shadowColor = 'rgba(180,140,255,0.28)';
+      ctx.shadowBlur = 4;
+      ctx.beginPath(); ctx.arc(cx, cy, p.orbit, 0, Math.PI*2); ctx.stroke();
       ctx.restore();
     });
 
@@ -2329,7 +2624,7 @@ drawHoloSQL('holo-sql');
       id:'linguae', name:'LINGUAE',        sub:'the Languages',
       tint:'#bfe9ff',
       stars:[
-        { label:'Python',           x:0.20, y:0.20, pct:90, desc:'Primary language. Pandas, NumPy, Scikit-learn. Used across IMDB analytics, Diabetes Risk, Uber vs Ola, and steganography.', anchor:true },
+        { label:'Python',           x:0.20, y:0.20, pct:90, desc:'Primary language. Pandas, NumPy, Scikit-learn, statsmodels. Used across BookedOut (Paris Airbnb), Diabetes Risk, Airline Tweet Sentiment, IMDb, and VAR Monetary Policy.', anchor:true },
         { label:'SQL',              x:0.34, y:0.32, pct:92, desc:'Advanced SQL — complex joins, window functions, optimization. Powered the Tennis Analytics relational DB and analytics work at UNH.' },
         { label:'R',                x:0.10, y:0.36, pct:80, desc:'Statistical analysis. VAR models, ggplot2, text mining. VAR Monetary Policy and Uber vs Ola review analytics.' },
         { label:'JavaScript',       x:0.24, y:0.44, pct:75, desc:'Node.js + Express backend, JWT auth. Built REST APIs at Amazing Humanbeing.' },
@@ -2382,12 +2677,14 @@ drawHoloSQL('holo-sql');
     });
   });
 
-  /* Star apparent magnitude — bigger and brighter for higher proficiency. */
+  /* Star apparent magnitude — bigger and brighter for higher proficiency.
+     Sizes bumped ~1.8× from the original spec so stars read clearly on
+     wide laptop displays without losing the constellation feel. */
   function starSize(pct){
-    if (pct >= 86) return 4.4;
-    if (pct >= 78) return 3.6;
-    if (pct >= 70) return 2.8;
-    return 2.2;
+    if (pct >= 86) return 7.8;
+    if (pct >= 78) return 6.4;
+    if (pct >= 70) return 5.0;
+    return 4.0;
   }
 
   function resize() {
@@ -2489,13 +2786,14 @@ drawHoloSQL('holo-sql');
       }
     }
 
-    /* Constellation lines + labels */
+    /* Constellation lines + labels — brighter & thicker so the
+       constellation shapes read clearly on wide displays. */
     constellations.forEach((c, ci) => {
       const isHovered = hoveredIdx >= 0 && stars[hoveredIdx].constIdx === ci;
       /* Lines */
-      ctx.strokeStyle = c.tint + (isHovered ? '70' : '20');
-      ctx.lineWidth = isHovered ? 1.1 : 0.6;
-      ctx.setLineDash([2, 5]);
+      ctx.strokeStyle = c.tint + (isHovered ? 'a0' : '40');
+      ctx.lineWidth = isHovered ? 1.6 : 1.1;
+      ctx.setLineDash([3, 6]);
       c.edges.forEach(([ai, bi]) => {
         const a = c.stars[ai], b = c.stars[bi];
         ctx.beginPath();
@@ -2509,15 +2807,15 @@ drawHoloSQL('holo-sql');
          outward toward the nearest canvas edge. */
       const anchor = c.stars[0];
       const ax = anchor.x * W, ay = anchor.y * H;
-      const labelY = anchor.y < 0.5 ? ay - 56 : ay + 56;
+      const labelY = anchor.y < 0.5 ? ay - 64 : ay + 64;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = "bold 11px 'JetBrains Mono'";
-      ctx.fillStyle = c.tint + (isHovered ? 'd0' : '70');
+      ctx.font = "bold 13px 'JetBrains Mono'";
+      ctx.fillStyle = c.tint + (isHovered ? 'e8' : '95');
       ctx.fillText(c.name, ax, labelY);
-      ctx.font = "italic 9px 'JetBrains Mono'";
-      ctx.fillStyle = c.tint + (isHovered ? '90' : '50');
-      ctx.fillText('· ' + c.sub + ' ·', ax, labelY + 14);
+      ctx.font = "italic 10px 'JetBrains Mono'";
+      ctx.fillStyle = c.tint + (isHovered ? 'b0' : '70');
+      ctx.fillText('· ' + c.sub + ' ·', ax, labelY + 16);
     });
 
     /* Stars */
@@ -2529,12 +2827,12 @@ drawHoloSQL('holo-sql');
       const bright = isHov ? 1 : 0.65;
       drawStar(ax, ay, mag, s.tint, bright);
 
-      /* Label below each star */
-      const fontSize = s.anchor ? 11 : 10;
-      ctx.font = `${isHov ? 'bold' : ''} ${fontSize}px 'JetBrains Mono'`;
-      ctx.fillStyle = isHov ? '#ffffff' : 'rgba(220,232,240,0.78)';
+      /* Label below each star — anchors get bolder + bigger weighting. */
+      const fontSize = s.anchor ? 13 : 12;
+      ctx.font = `${isHov || s.anchor ? 'bold' : '500'} ${fontSize}px 'JetBrains Mono'`;
+      ctx.fillStyle = isHov ? '#ffffff' : 'rgba(228,236,244,0.92)';
       ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      ctx.fillText(s.label, ax, ay + mag * 5 + 2);
+      ctx.fillText(s.label, ax, ay + mag * 4 + 4);
     });
 
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
@@ -2543,348 +2841,1189 @@ drawHoloSQL('holo-sql');
 })();
 
 /* ─────────────────────────────
-   PROJECT MINI VISUALIZATIONS
+   PROJECT MINI-VIS — DOODLE STYLE v2
+   Richer per-card scenes: layered foreground/background, multi-element
+   animation, accent colors (amber/pink), pulse rings, ticker dots.
+   Cyan→violet remains the spine; accents add life without breaking theme.
 ───────────────────────────── */
+
+/* Shared frame setup: cyan→violet gradient stroke + drifting bg dots. */
+function doodlePrep(ctx, W, H, tick) {
+  ctx.clearRect(0, 0, W, H);
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#5eead4');
+  grad.addColorStop(1, '#a78bfa');
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 1.5 + Math.sin(tick * 0.02) * 0.15;
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  /* drifting background spec-dots */
+  ctx.fillStyle = 'rgba(94,234,212,0.10)';
+  for (let i = 0; i < 18; i++) {
+    const x = (i * 67.3 + tick * 0.05) % W;
+    const y = (i * 43.7 + Math.sin(tick * 0.012 + i) * 4) % H;
+    ctx.fillRect(x, y, 1.4, 1.4);
+  }
+}
+
+/* Draw a 5-point star centered at (x,y) with radius r. Pass 'fill' for solid. */
+function doodleStar(ctx, x, y, r, color, fill) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.beginPath();
+  for (let p = 0; p < 5; p++) {
+    const a = -Math.PI/2 + p * Math.PI * 2/5;
+    const rr = (p % 2 === 0) ? r : r * 0.4;
+    if (p === 0) ctx.moveTo(Math.cos(a)*rr, Math.sin(a)*rr);
+    else         ctx.lineTo(Math.cos(a)*rr, Math.sin(a)*rr);
+  }
+  ctx.closePath();
+  if (fill) { ctx.fillStyle = color; ctx.fill(); }
+  ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.stroke();
+  ctx.restore();
+}
+
+/* Draw a pulse ring around (x,y) — used to highlight key points. */
+function doodlePulseRing(ctx, x, y, baseR, tick, phase, color) {
+  const t = (tick * 0.03 + phase) % (Math.PI * 2);
+  const r = baseR + Math.abs(Math.sin(t)) * 8;
+  const alpha = 0.4 - Math.abs(Math.sin(t)) * 0.35;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.stroke();
+  ctx.restore();
+}
+
 function projectVis(id, type) {
   const el = document.getElementById(id); if (!el) return;
-  let W = el.parentElement.offsetWidth || 400, H = 140;
+  let W = el.parentElement.offsetWidth || 400, H = 170;
   el.width = W; el.height = H;
   const ctx = el.getContext('2d');
-  let tick = 0, started = false;
-
+  let started = false;
   const obs = new IntersectionObserver(entries => {
     if (entries[0].isIntersecting && !started) { started = true; run(); obs.disconnect(); }
   }, { threshold: 0.3 });
   obs.observe(el);
-
   function run() {
-    if (type === 'tennis') drawTennisAnalytics(ctx, W, H);
-    else if (type === 'feature') drawFeatureImportance(ctx, W, H);
-    else if (type === 'network') drawNetworkFlow(ctx, W, H);
-    else if (type === 'timeseries') drawTimeSeries(ctx, W, H);
-    else if (type === 'scatter') drawScatterPlot(ctx, W, H);
-    else if (type === 'sentiment') drawSentiment(ctx, W, H);
-    else if (type === 'erd') drawERD(ctx, W, H);
-    else if (type === 'stego') drawStego(ctx, W, H);
+    const map = {
+      airbnb: doodleAirbnb, basketball: doodleBasketball, airline: doodleAirline,
+      health:  doodleHealth, supply:     doodleSupply,     economy:  doodleEconomy,
+      carride: doodleCarRide, tennis:    doodleTennis,     movie:    doodleMovie,
+    };
+    (map[type] || (() => {}))(ctx, W, H);
   }
 }
 
-function drawTennisAnalytics(ctx, W, H) {
-  /* Player performance vs age curve — Moneyball prime-window analysis */
-  const padL=40, padR=16, padT=28, padB=22;
-  const gW=W-padL-padR, gH=H-padT-padB;
-  const ages=Array.from({length:24},(_,i)=>i+17);
-  function perf(a){return Math.exp(-Math.pow((a-27)/5.2,2));}
-  const pts=ages.map(a=>({age:a,score:perf(a)}));
-  // Three sample player trajectories
-  const players=[
-    {peak:26,c:'#5eead4',name:'P1'},
-    {peak:28,c:'#8b5cf6',name:'P2'},
-    {peak:25,c:'#10b981',name:'P3'},
-  ];
-  let prog=0, tick=0;
-  function frame(){
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle='rgba(94,234,212,0.02)'; ctx.fillRect(0,0,W,H);
-    prog=Math.min(prog+0.018,1); tick++;
-    // Prime window shading (ages 24-30 → indices 7-13)
-    if(prog>0.3){
-      const a=(prog-0.3)/0.7;
-      const wx1=padL+(7/23)*gW, wx2=padL+(13/23)*gW;
-      ctx.fillStyle=`rgba(94,234,212,${0.07*a})`;
-      ctx.fillRect(wx1,padT,wx2-wx1,gH);
-      ctx.setLineDash([3,3]);
-      ctx.strokeStyle=`rgba(94,234,212,${0.35*a})`; ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(wx1,padT);ctx.lineTo(wx1,padT+gH);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(wx2,padT);ctx.lineTo(wx2,padT+gH);ctx.stroke();
-      ctx.setLineDash([]);
-      if(prog>0.6){
-        const a2=(prog-0.6)/0.4;
-        ctx.fillStyle=`rgba(94,234,212,${0.7*a2})`;
-        ctx.font='bold 7px JetBrains Mono'; ctx.textAlign='center';
-        ctx.fillText('▼ PRIME',padL+(10/23)*gW,padT+9);
-        ctx.fillText('Ages 24–30',padL+(10/23)*gW,padT+18);
-        ctx.textAlign='left';
-      }
-    }
-    // Main performance envelope curve
-    const n=Math.floor(pts.length*prog);
-    if(n>1){
-      ctx.beginPath();
-      pts.slice(0,n).forEach((p,i)=>{
-        const x=padL+(i/23)*gW, y=padT+(1-p.score)*gH;
-        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-      });
-      const lx=padL+((n-1)/23)*gW;
-      ctx.lineTo(lx,padT+gH); ctx.lineTo(padL,padT+gH); ctx.closePath();
-      ctx.fillStyle='rgba(94,234,212,0.09)'; ctx.fill();
-      ctx.beginPath();
-      pts.slice(0,n).forEach((p,i)=>{
-        const x=padL+(i/23)*gW, y=padT+(1-p.score)*gH;
-        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-      });
-      ctx.strokeStyle='rgba(94,234,212,0.85)'; ctx.lineWidth=2; ctx.stroke();
-    }
-    // Player trajectory dots (appear after main curve)
-    if(prog>0.5){
-      players.forEach((pl)=>{
-        const a2=(prog-0.5)*2;
-        const pi=pl.peak-17;
-        const x=padL+(pi/23)*gW, y=padT+(1-perf(pl.peak))*gH;
-        const pulse=1+Math.sin(tick*0.08)*0.2;
-        ctx.beginPath(); ctx.arc(x,y,4*pulse*Math.min(a2,1),0,Math.PI*2);
-        ctx.fillStyle=pl.c+'cc'; ctx.fill();
-        ctx.strokeStyle=pl.c; ctx.lineWidth=1; ctx.stroke();
-      });
-    }
-    // Y-axis label
-    ctx.fillStyle='rgba(100,116,139,0.6)'; ctx.font='7px JetBrains Mono'; ctx.textAlign='right';
-    ctx.fillText('High',padL-4,padT+8); ctx.fillText('Low',padL-4,padT+gH);
-    // X-axis age ticks
-    [20,25,30,35,40].forEach(age=>{
-      const x=padL+((age-17)/23)*gW;
-      ctx.fillStyle='rgba(100,116,139,0.5)'; ctx.font='7px JetBrains Mono'; ctx.textAlign='center';
-      ctx.fillText(age,x,H-5);
-    });
-    ctx.textAlign='left';
-    // Title
-    ctx.fillStyle='rgba(94,234,212,0.55)'; ctx.font='bold 9px JetBrains Mono';
-    ctx.fillText('PERFORMANCE vs AGE — MONEYBALL ANALYSIS',padL,13);
-    if(prog<1) requestAnimationFrame(frame);
-    else setTimeout(()=>{prog=0;frame();},5000);
-  }
-  frame();
-}
-
-function drawFeatureImportance(ctx, W, H) {
-  const features = ['Glucose','BMI','Age','Insulin','DPF','Pressure','Pregnancies'];
-  const vals = [0.82,0.71,0.58,0.49,0.41,0.33,0.24];
-  let prog = 0;
+/* ── 1. BookedOut — Paris skyline + detailed Eiffel + pulsing pins + price tag */
+function doodleAirbnb(ctx, W, H) {
+  let tick = 0;
   function frame() {
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle='rgba(94,234,212,0.03)'; ctx.fillRect(0,0,W,H);
-    prog = Math.min(prog+0.02, 1);
-    const bh = (H-20) / features.length * 0.6, gap=(H-20)/features.length*0.4;
-    const labelW = 76;
-    features.forEach((f,i) => {
-      const y = 12 + i * ((H-20)/features.length);
-      const bw = (W - labelW - 48) * vals[i] * prog;
-      ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='9px JetBrains Mono';
-      ctx.fillText(f, 8, y + bh/2 + 4);
-      const g = ctx.createLinearGradient(labelW, 0, labelW+bw, 0);
-      g.addColorStop(0,'rgba(94,234,212,0.9)'); g.addColorStop(1,'rgba(139,92,246,0.5)');
-      ctx.fillStyle=g; ctx.fillRect(labelW, y, bw, bh);
-      ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='8px JetBrains Mono';
-      ctx.fillText(Math.round(vals[i]*100*prog)+'%', labelW+bw+6, y+bh/2+3);
-    });
-    ctx.fillStyle='rgba(94,234,212,0.5)'; ctx.font='bold 9px JetBrains Mono';
-    ctx.fillText('FEATURE IMPORTANCE', 8, 10);
-    if (prog < 1) requestAnimationFrame(frame);
-  }
-  frame();
-}
+    doodlePrep(ctx, W, H, tick);
+    const cx = W/2, baseY = H - 22;
 
-function drawNetworkFlow(ctx, W, H) {
-  const nodes = [
-    {x:0.1,y:0.5,label:'F1',c:'#5eead4'},{x:0.25,y:0.25,label:'F2',c:'#5eead4'},
-    {x:0.25,y:0.75,label:'F3',c:'#5eead4'},{x:0.5,y:0.15,label:'P1',c:'#8b5cf6'},
-    {x:0.5,y:0.5,label:'P2',c:'#8b5cf6'},{x:0.5,y:0.85,label:'P3',c:'#8b5cf6'},
-    {x:0.75,y:0.3,label:'D1',c:'#f59e0b'},{x:0.75,y:0.7,label:'D2',c:'#f59e0b'},
-    {x:0.9,y:0.5,label:'HUB',c:'#10b981'},
-  ];
-  const edges=[[0,3],[0,4],[1,3],[1,4],[2,4],[2,5],[3,6],[4,6],[4,7],[5,7],[6,8],[7,8]];
-  let tick=0;
-  function frame() {
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle='rgba(139,92,246,0.03)'; ctx.fillRect(0,0,W,H);
-    tick++;
-    edges.forEach(([ai,bi]) => {
-      const a=nodes[ai], b=nodes[bi];
-      const t=(tick*0.01+ai*0.2)%1;
-      ctx.strokeStyle='rgba(139,92,246,0.2)'; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.moveTo(a.x*W,a.y*H); ctx.lineTo(b.x*W,b.y*H); ctx.stroke();
-      const px=a.x*W+(b.x*W-a.x*W)*t, py=a.y*H+(b.y*H-a.y*H)*t;
-      ctx.beginPath(); ctx.arc(px,py,2.5,0,Math.PI*2);
-      ctx.fillStyle='rgba(94,234,212,0.8)'; ctx.fill();
-    });
-    nodes.forEach(n => {
-      ctx.beginPath(); ctx.arc(n.x*W,n.y*H,7,0,Math.PI*2);
-      ctx.fillStyle=n.c+'33'; ctx.fill();
-      ctx.strokeStyle=n.c; ctx.lineWidth=1.5; ctx.stroke();
-      ctx.fillStyle=n.c; ctx.font='7px JetBrains Mono';
-      ctx.textAlign='center'; ctx.fillText(n.label,n.x*W,n.y*H+3); ctx.textAlign='left';
-    });
-    ctx.fillStyle='rgba(139,92,246,0.5)'; ctx.font='bold 9px JetBrains Mono';
-    ctx.fillText('SUPPLY CHAIN NETWORK', 8, 12);
-    requestAnimationFrame(frame);
-  }
-  frame();
-}
-
-function drawTimeSeries(ctx, W, H) {
-  function gen(len, base, noise, trend) {
-    return Array.from({length:len},(_,i)=>base+trend*i+((Math.random()-0.5)*noise)+Math.sin(i*0.4)*noise*0.3);
-  }
-  const n=40;
-  const series = [
-    {pts:gen(n,3,0.4,0.02),c:'#5eead4',label:'Interest Rate'},
-    {pts:gen(n,5,0.6,-0.01),c:'#f59e0b',label:'Inflation'},
-    {pts:gen(n,2.5,0.3,0.015),c:'#8b5cf6',label:'GDP Growth'},
-  ];
-  let prog=0;
-  function frame() {
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle='rgba(94,234,212,0.02)'; ctx.fillRect(0,0,W,H);
-    prog=Math.min(prog+0.015,1);
-    const labelW=0, padL=8, padR=8, padT=18, padB=8;
-    series.forEach(s => {
-      const mn=Math.min(...s.pts), mx=Math.max(...s.pts), rng=mx-mn||1;
-      const pts=Math.floor(n*prog);
-      ctx.strokeStyle=s.c; ctx.lineWidth=1.5;
+    /* Background skyline silhouette (faint), left + right of Eiffel */
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    let x = 6;
+    const buildsL = [[16,14],[10,8],[20,20],[12,12],[16,10]];
+    ctx.moveTo(x, baseY);
+    buildsL.forEach(([w,h]) => { ctx.lineTo(x, baseY-h); ctx.lineTo(x+w, baseY-h); x+=w; });
+    ctx.lineTo(x, baseY);
+    /* Right side */
+    let xr = W - 6;
+    ctx.moveTo(xr, baseY);
+    const buildsR = [[-14,12],[-18,18],[-12,10],[-20,16],[-14,14]];
+    buildsR.forEach(([w,h]) => { ctx.lineTo(xr, baseY-h); ctx.lineTo(xr+w, baseY-h); xr+=w; });
+    ctx.lineTo(xr, baseY);
+    ctx.stroke();
+    /* Tiny chimneys on a couple buildings */
+    [[40, baseY-14], [W-40, baseY-16]].forEach(([cx2,cy2]) => {
       ctx.beginPath();
-      for(let i=0;i<pts;i++){
-        const x=padL+i*((W-padL-padR)/(n-1));
-        const y=padT+(1-(s.pts[i]-mn)/rng)*(H-padT-padB);
-        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-      }
+      ctx.moveTo(cx2, cy2); ctx.lineTo(cx2, cy2-4); ctx.lineTo(cx2+3, cy2-4); ctx.lineTo(cx2+3, cy2);
       ctx.stroke();
     });
-    // Legend
-    series.forEach((s,i) => {
-      ctx.fillStyle=s.c; ctx.fillRect(8+i*90,4,12,3);
-      ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='8px JetBrains Mono';
-      ctx.fillText(s.label,24+i*90,10);
-    });
-    if(prog<1) requestAnimationFrame(frame);
-    else setTimeout(()=>{prog=0;frame();},4000);
-  }
-  frame();
-}
+    ctx.restore();
 
-function drawScatterPlot(ctx, W, H) {
-  const pts=Array.from({length:60},()=>({x:Math.random(),y:Math.random()*0.6+0.2+Math.random()*0.3,r:Math.random()*4+2}));
-  let prog=0;
-  function frame() {
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle='rgba(245,158,11,0.03)'; ctx.fillRect(0,0,W,H);
-    prog=Math.min(prog+0.025,1);
-    const n=Math.floor(pts.length*prog);
-    pts.slice(0,n).forEach(p => {
-      ctx.beginPath(); ctx.arc(16+p.x*(W-32),14+p.y*(H-28),p.r,0,Math.PI*2);
-      ctx.fillStyle='rgba(245,158,11,0.7)'; ctx.fill();
+    /* Eiffel Tower with cross-bracing */
+    const topY = 18, wTop = 4, wBase = 36;
+    ctx.lineWidth = 1.6;
+    /* main outline */
+    ctx.beginPath();
+    ctx.moveTo(cx - wTop/2, topY); ctx.lineTo(cx - wBase/2, baseY);
+    ctx.moveTo(cx + wTop/2, topY); ctx.lineTo(cx + wBase/2, baseY);
+    ctx.moveTo(cx, topY); ctx.lineTo(cx, topY - 8);   /* antenna */
+    ctx.stroke();
+    /* antenna tip */
+    ctx.fillStyle = '#5eead4';
+    ctx.beginPath(); ctx.arc(cx, topY - 8, 1.6, 0, Math.PI*2); ctx.fill();
+    /* decks */
+    const decks = [{y: H*0.36, w: 14}, {y: H*0.56, w: 22}, {y: H*0.74, w: 30}];
+    ctx.lineWidth = 1.2;
+    decks.forEach(d => {
+      ctx.beginPath();
+      ctx.moveTo(cx - d.w/2, d.y); ctx.lineTo(cx + d.w/2, d.y);
+      ctx.moveTo(cx - d.w/2, d.y - 2); ctx.lineTo(cx + d.w/2, d.y - 2);
+      ctx.stroke();
     });
-    if(prog>0.3) {
-      ctx.strokeStyle='rgba(94,234,212,0.6)'; ctx.lineWidth=2;
-      ctx.beginPath(); ctx.moveTo(16,H-14); ctx.lineTo(W-16,18); ctx.stroke();
+    /* cross-bracing X between decks */
+    ctx.save();
+    ctx.globalAlpha = 0.5; ctx.lineWidth = 0.8;
+    for (let i = 0; i < decks.length - 1; i++) {
+      const a = decks[i], b = decks[i+1];
+      ctx.beginPath();
+      ctx.moveTo(cx - a.w/2, a.y); ctx.lineTo(cx + b.w/2, b.y);
+      ctx.moveTo(cx + a.w/2, a.y); ctx.lineTo(cx - b.w/2, b.y);
+      ctx.stroke();
     }
-    ctx.fillStyle='rgba(245,158,11,0.5)'; ctx.font='bold 9px JetBrains Mono';
-    ctx.fillText('MOVIE REVENUE vs BUDGET', 8, 12);
-    if(prog<1) requestAnimationFrame(frame);
-    else setTimeout(()=>{prog=0;frame();},3000);
-  }
-  frame();
-}
+    /* lowest section bracing */
+    ctx.beginPath();
+    ctx.moveTo(cx - decks[2].w/2, decks[2].y); ctx.lineTo(cx + wBase/2, baseY);
+    ctx.moveTo(cx + decks[2].w/2, decks[2].y); ctx.lineTo(cx - wBase/2, baseY);
+    ctx.stroke();
+    ctx.restore();
 
-function drawSentiment(ctx, W, H) {
-  const bubbles=[
-    {x:0.2,y:0.4,r:28,c:'#10b981',label:'Service',sent:'+72%'},
-    {x:0.42,y:0.55,r:22,c:'#f59e0b',label:'Price',sent:'+45%'},
-    {x:0.6,y:0.35,r:32,c:'#ec4899',label:'Driver',sent:'-38%'},
-    {x:0.78,y:0.6,r:18,c:'#ef4444',label:'App',sent:'-55%'},
-    {x:0.32,y:0.75,r:16,c:'#8b5cf6',label:'ETA',sent:'+31%'},
-    {x:0.65,y:0.72,r:20,c:'#f59e0b',label:'Route',sent:'-22%'},
-  ];
-  let tick=0;
-  function frame() {
-    ctx.clearRect(0,0,W,H); tick++;
-    ctx.fillStyle='rgba(236,72,153,0.03)'; ctx.fillRect(0,0,W,H);
-    bubbles.forEach((b,i)=>{
-      const pulse=1+Math.sin(tick*0.04+i)*0.04;
-      const r=b.r*pulse, bx=b.x*W, by=b.y*H;
-      ctx.beginPath(); ctx.arc(bx,by,r,0,Math.PI*2);
-      ctx.fillStyle=b.c+'33'; ctx.fill();
-      ctx.strokeStyle=b.c+'99'; ctx.lineWidth=1.5; ctx.stroke();
-      ctx.fillStyle=b.c; ctx.font='bold 9px JetBrains Mono';
-      ctx.textAlign='center'; ctx.fillText(b.label,bx,by-3);
-      ctx.font='8px JetBrains Mono'; ctx.fillText(b.sent,bx,by+9);
-      ctx.textAlign='left';
-    });
-    ctx.fillStyle='rgba(236,72,153,0.5)'; ctx.font='bold 9px JetBrains Mono';
-    ctx.fillText('SENTIMENT DISTRIBUTION', 8, 12);
-    requestAnimationFrame(frame);
-  }
-  frame();
-}
-
-function drawERD(ctx, W, H) {
-  const tables=[
-    {x:0.15,y:0.5,label:'Players',c:'#5eead4'},
-    {x:0.4,y:0.25,label:'Matches',c:'#8b5cf6'},
-    {x:0.4,y:0.75,label:'Rankings',c:'#10b981'},
-    {x:0.7,y:0.5,label:'Tournaments',c:'#f59e0b'},
-    {x:0.88,y:0.3,label:'Venues',c:'#8b5cf6'},
-    {x:0.88,y:0.7,label:'Results',c:'#5eead4'},
-  ];
-  const rels=[[0,1],[0,2],[1,3],[2,3],[3,4],[3,5]];
-  let tick=0;
-  function frame() {
-    ctx.clearRect(0,0,W,H); tick++;
-    ctx.fillStyle='rgba(94,234,212,0.02)'; ctx.fillRect(0,0,W,H);
-    rels.forEach(([ai,bi])=>{
-      const a=tables[ai],b=tables[bi];
-      ctx.strokeStyle='rgba(94,234,212,0.2)'; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.moveTo(a.x*W,a.y*H); ctx.lineTo(b.x*W,b.y*H); ctx.stroke();
-      // flow particle
-      const t=(tick*0.008+ai*0.3)%1;
-      const px=a.x*W+(b.x*W-a.x*W)*t, py=a.y*H+(b.y*H-a.y*H)*t;
-      ctx.beginPath(); ctx.arc(px,py,2,0,Math.PI*2);
-      ctx.fillStyle='rgba(94,234,212,0.8)'; ctx.fill();
-    });
-    tables.forEach(t=>{
-      const tw=60,th=20,tx=t.x*W-tw/2,ty=t.y*H-th/2;
-      ctx.fillStyle=t.c+'22'; ctx.fillRect(tx,ty,tw,th);
-      ctx.strokeStyle=t.c+'66'; ctx.lineWidth=1;
-      ctx.strokeRect(tx,ty,tw,th);
-      ctx.fillStyle=t.c; ctx.font='bold 8px JetBrains Mono';
-      ctx.textAlign='center'; ctx.fillText(t.label,t.x*W,t.y*H+4); ctx.textAlign='left';
-    });
-    ctx.fillStyle='rgba(94,234,212,0.5)'; ctx.font='bold 9px JetBrains Mono';
-    ctx.fillText('ERD — TENNIS DATABASE', 8, 12);
-    requestAnimationFrame(frame);
-  }
-  frame();
-}
-
-function drawStego(ctx, W, H) {
-  let tick=0;
-  function frame() {
-    ctx.clearRect(0,0,W,H); tick++;
-    // pixel grid with hidden data
-    const pw=8, cols=Math.floor(W/pw), rows=Math.floor(H/pw);
-    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) {
-      const isSecret=(r*cols+c)%17===0;
-      const pulse=isSecret?Math.sin(tick*0.06+c*0.3)*0.5+0.5:0;
-      const base=Math.random()*30+40;
-      ctx.fillStyle=isSecret?`rgba(94,234,212,${0.15+pulse*0.5})`:`rgba(${base},${base+10},${base+20},0.4)`;
-      ctx.fillRect(c*pw,r*pw,pw-0.5,pw-0.5);
+    /* Seine river wavy line */
+    ctx.lineWidth = 1;
+    ctx.save();
+    ctx.globalAlpha = 0.65;
+    ctx.beginPath();
+    for (let x = 0; x < W; x += 6) {
+      const w = Math.sin((x + tick * 0.6) * 0.04) * 1.8;
+      if (x === 0) ctx.moveTo(x, baseY + w); else ctx.lineTo(x, baseY + w);
     }
-    // overlay text
-    ctx.fillStyle='rgba(94,234,212,0.7)'; ctx.font='bold 9px JetBrains Mono';
-    ctx.fillText('LSB STEGANOGRAPHY', 8, 12);
-    ctx.fillStyle='rgba(94,234,212,0.4)'; ctx.font='8px JetBrains Mono';
-    ctx.fillText(`PSNR: ${(42+Math.sin(tick*0.02)*0.5).toFixed(2)} dB`, W-110, 12);
-    requestAnimationFrame(frame);
+    ctx.stroke();
+    ctx.restore();
+
+    /* Pulsing location pins around the city */
+    const pins = [
+      { x: W * 0.16, y: H * 0.62, hot: true },
+      { x: W * 0.84, y: H * 0.50, hot: false },
+      { x: W * 0.88, y: H * 0.76, hot: false },
+    ];
+    pins.forEach((p, i) => {
+      doodlePulseRing(ctx, p.x, p.y, 4, tick, i * 1.5, p.hot ? '#5eead4' : '#a78bfa');
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y + 6);
+      ctx.bezierCurveTo(p.x - 5, p.y, p.x - 5, p.y - 7, p.x, p.y - 7);
+      ctx.bezierCurveTo(p.x + 5, p.y - 7, p.x + 5, p.y, p.x, p.y + 6);
+      ctx.stroke();
+      ctx.fillStyle = p.hot ? '#5eead4' : 'rgba(167,139,250,0.85)';
+      ctx.beginPath(); ctx.arc(p.x, p.y - 3, 1.6, 0, Math.PI*2); ctx.fill();
+    });
+
+    /* Price tag — top right */
+    ctx.save();
+    ctx.translate(W - 56, 16);
+    ctx.beginPath();
+    ctx.moveTo(0, 0); ctx.lineTo(38, 0); ctx.lineTo(44, 9); ctx.lineTo(38, 18); ctx.lineTo(0, 18); ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath(); ctx.arc(36, 9, 1.5, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = '#5eead4';
+    ctx.font = "bold 10px 'JetBrains Mono'";
+    ctx.textAlign = 'center'; ctx.fillText('€85', 18, 12);
+    ctx.restore();
+
+    /* Caption */
+    ctx.fillStyle = 'rgba(94,234,212,0.55)';
+    ctx.font = "8px 'JetBrains Mono'";
+    ctx.textAlign = 'left';
+    ctx.fillText('PARIS 17e · BATIGNOLLES · 4,391 LISTINGS', 8, H - 4);
+    tick++; requestAnimationFrame(frame);
   }
   frame();
 }
 
-projectVis('pv0','tennis');
-projectVis('pv1','feature');
-projectVis('pv2','network');
-projectVis('pv3','timeseries');
-projectVis('pv4','scatter');
-projectVis('pv5','sentiment');
-projectVis('pv7','stego');
+/* ── 2. NBA Expansion — Court arc + basketball + city pins + travel-arc */
+function doodleBasketball(ctx, W, H) {
+  let tick = 0;
+  function frame() {
+    doodlePrep(ctx, W, H, tick);
+
+    /* Faint half-court arc (background) */
+    ctx.save();
+    ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(W * 0.27, H/2, 56, -Math.PI/2 - 0.4, Math.PI/2 + 0.4);
+    ctx.stroke();
+    /* Free throw line */
+    ctx.beginPath();
+    ctx.moveTo(W * 0.27 - 22, H/2 - 14);
+    ctx.lineTo(W * 0.27 + 22, H/2 - 14);
+    ctx.moveTo(W * 0.27 - 22, H/2 + 14);
+    ctx.lineTo(W * 0.27 + 22, H/2 + 14);
+    ctx.stroke();
+    ctx.restore();
+
+    /* Basketball with detailed seams */
+    const bx = W * 0.27, by = H/2, br = 28;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(bx, by, br, 0, Math.PI*2);
+    /* Seams: vertical, horizontal, two left curves, two right curves */
+    ctx.moveTo(bx, by - br); ctx.lineTo(bx, by + br);
+    ctx.moveTo(bx - br, by); ctx.lineTo(bx + br, by);
+    ctx.moveTo(bx - br, by);
+    ctx.bezierCurveTo(bx - br*0.55, by - br*0.6, bx - br*0.5, by - br, bx - br*0.4, by - br);
+    ctx.moveTo(bx - br, by);
+    ctx.bezierCurveTo(bx - br*0.55, by + br*0.6, bx - br*0.5, by + br, bx - br*0.4, by + br);
+    ctx.moveTo(bx + br, by);
+    ctx.bezierCurveTo(bx + br*0.55, by - br*0.6, bx + br*0.5, by - br, bx + br*0.4, by - br);
+    ctx.moveTo(bx + br, by);
+    ctx.bezierCurveTo(bx + br*0.55, by + br*0.6, bx + br*0.5, by + br, bx + br*0.4, by + br);
+    ctx.stroke();
+
+    /* Hoop net (above ball, simplified) */
+    ctx.save();
+    ctx.globalAlpha = 0.6; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(bx, 22, 8, 0, Math.PI, false);
+    /* net mesh strands */
+    for (let i = -3; i <= 3; i++) {
+      ctx.moveTo(bx + i * 2.5, 22);
+      ctx.lineTo(bx + i * 1.5, 36);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    /* City pins (right side) */
+    const cities = [
+      { x: W * 0.62, y: H * 0.22, label: 'MTL', winner: true },
+      { x: W * 0.78, y: H * 0.50, label: 'TPA', winner: false },
+      { x: W * 0.93, y: H * 0.76, label: 'MEX', winner: false },
+    ];
+    cities.forEach((c, i) => {
+      if (c.winner) doodlePulseRing(ctx, c.x, c.y, 7, tick, i * 1.3, '#5eead4');
+      /* Pin (teardrop) */
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(c.x, c.y + 10);
+      ctx.bezierCurveTo(c.x - 7, c.y, c.x - 7, c.y - 10, c.x, c.y - 11);
+      ctx.bezierCurveTo(c.x + 7, c.y - 10, c.x + 7, c.y, c.x, c.y + 10);
+      ctx.stroke();
+      /* dot */
+      ctx.fillStyle = c.winner ? '#5eead4' : 'rgba(167,139,250,0.85)';
+      ctx.beginPath(); ctx.arc(c.x, c.y - 3, 2, 0, Math.PI*2); ctx.fill();
+      /* label */
+      ctx.fillStyle = c.winner ? '#5eead4' : 'rgba(94,234,212,0.65)';
+      ctx.font = c.winner ? "bold 9px 'JetBrains Mono'" : "8px 'JetBrains Mono'";
+      ctx.fillText(c.label, c.x + 11, c.y + 1);
+    });
+
+    /* Travel-arc from ball to Montreal (animated dash) */
+    ctx.save();
+    ctx.lineDashOffset = -tick * 0.3;
+    ctx.setLineDash([4, 6]);
+    ctx.strokeStyle = '#5eead4';
+    ctx.globalAlpha = 0.7;
+    ctx.beginPath();
+    /* curve up over the ball, then to MTL */
+    ctx.moveTo(bx + br*0.85, by - br*0.5);
+    ctx.quadraticCurveTo(W * 0.45, 18, cities[0].x - 6, cities[0].y);
+    ctx.stroke();
+    ctx.restore();
+
+    /* Trophy badge top-right */
+    ctx.save();
+    ctx.translate(W - 36, 16);
+    /* small trophy cup */
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(-6, 0); ctx.lineTo(-6, 6);
+    ctx.bezierCurveTo(-6, 11, 6, 11, 6, 6);
+    ctx.lineTo(6, 0);
+    ctx.closePath();
+    ctx.moveTo(-2, 11); ctx.lineTo(2, 11);
+    ctx.moveTo(-4, 14); ctx.lineTo(4, 14);
+    ctx.stroke();
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = "bold 8px 'JetBrains Mono'";
+    ctx.textAlign = 'left';
+    ctx.fillText('32', 12, 8);
+    ctx.restore();
+
+    /* Caption */
+    ctx.fillStyle = 'rgba(94,234,212,0.55)';
+    ctx.font = "8px 'JetBrains Mono'";
+    ctx.textAlign = 'left';
+    ctx.fillText('15 PAIRINGS · ILP + NASH · MTL UNIVERSAL', 8, H - 4);
+    tick++; requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+/* ── 3. Airline Tweets — Jet silhouette + ascending tweet bubbles + clouds */
+function doodleAirline(ctx, W, H) {
+  let tick = 0;
+  function frame() {
+    doodlePrep(ctx, W, H, tick);
+    const cy = H/2;
+
+    /* Drifting clouds (background) */
+    const clouds = [
+      { x: ((tick * 0.15) % (W + 60)) - 30, y: 26, s: 1 },
+      { x: ((tick * 0.10 + 180) % (W + 60)) - 30, y: H - 28, s: 0.8 },
+    ];
+    ctx.save();
+    ctx.globalAlpha = 0.35; ctx.lineWidth = 1;
+    clouds.forEach(c => {
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, 6 * c.s, 0, Math.PI*2);
+      ctx.arc(c.x + 7 * c.s, c.y - 3 * c.s, 8 * c.s, 0, Math.PI*2);
+      ctx.arc(c.x + 15 * c.s, c.y, 6 * c.s, 0, Math.PI*2);
+      ctx.stroke();
+    });
+    ctx.restore();
+
+    /* Commercial jet silhouette (more detail than paper plane) */
+    const planeX = W * 0.72 + Math.sin(tick * 0.03) * 4;
+    const planeY = cy + Math.cos(tick * 0.025) * 3;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    /* fuselage */
+    ctx.moveTo(planeX + 30, planeY);
+    ctx.lineTo(planeX - 18, planeY - 3);
+    ctx.lineTo(planeX - 24, planeY - 8);   /* tail top */
+    ctx.lineTo(planeX - 24, planeY + 2);
+    ctx.lineTo(planeX - 18, planeY + 3);
+    ctx.lineTo(planeX + 30, planeY);
+    /* wings (back-swept) */
+    ctx.moveTo(planeX + 4, planeY + 1);
+    ctx.lineTo(planeX - 14, planeY + 14);
+    ctx.lineTo(planeX - 2, planeY + 4);
+    ctx.moveTo(planeX + 4, planeY - 1);
+    ctx.lineTo(planeX - 14, planeY - 14);
+    ctx.lineTo(planeX - 2, planeY - 4);
+    /* engines */
+    ctx.moveTo(planeX - 6, planeY + 8);
+    ctx.lineTo(planeX, planeY + 8);
+    ctx.moveTo(planeX - 6, planeY - 8);
+    ctx.lineTo(planeX, planeY - 8);
+    /* window strip */
+    ctx.moveTo(planeX + 4, planeY - 1.5);
+    ctx.lineTo(planeX + 20, planeY - 1.5);
+    ctx.stroke();
+
+    /* Ascending tweet bubbles, colored by sentiment */
+    const bubbles = [
+      { x0: W * 0.08, baseY: cy + 8, r: 10, tint: '#f87171', hue: 0  }, /* neg = pink */
+      { x0: W * 0.22, baseY: cy + 14, r: 12, tint: '#5eead4', hue: 1 }, /* pos = cyan */
+      { x0: W * 0.36, baseY: cy + 4, r: 9,  tint: '#a78bfa', hue: 2 }, /* neutral = violet */
+      { x0: W * 0.50, baseY: cy + 10, r: 8, tint: '#f87171', hue: 0 },
+    ];
+    bubbles.forEach((b, i) => {
+      const lift = ((tick * 0.6 + i * 50) % 80);
+      const y = b.baseY - lift * 0.6;
+      const opacity = Math.max(0, 1 - lift / 80) * 0.85;
+      ctx.save();
+      ctx.globalAlpha = opacity;
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.arc(b.x0, y, b.r, 0, Math.PI*2);
+      ctx.moveTo(b.x0 + b.r * 0.3, y + b.r * 0.7);
+      ctx.lineTo(b.x0 + b.r * 0.5, y + b.r * 1.2);
+      ctx.lineTo(b.x0 + b.r * 0.15, y + b.r * 0.9);
+      ctx.stroke();
+      /* sentiment dot inside */
+      ctx.fillStyle = b.tint;
+      ctx.beginPath(); ctx.arc(b.x0, y, 1.8, 0, Math.PI*2); ctx.fill();
+      /* tiny inner lines (text suggestion) */
+      ctx.strokeStyle = b.tint; ctx.lineWidth = 0.8;
+      ctx.globalAlpha = opacity * 0.7;
+      ctx.beginPath();
+      ctx.moveTo(b.x0 - b.r * 0.5, y - 3); ctx.lineTo(b.x0 + b.r * 0.5, y - 3);
+      ctx.moveTo(b.x0 - b.r * 0.5, y + 3); ctx.lineTo(b.x0 + b.r * 0.3, y + 3);
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    /* Sentiment bar (top right) */
+    const barX = W - 90, barY = 14, barW = 70, barH = 5;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(94,234,212,0.4)'; ctx.lineWidth = 1;
+    ctx.strokeRect(barX, barY, barW, barH);
+    /* split: 30% positive (cyan), 70% negative (pink) */
+    ctx.fillStyle = '#5eead4';
+    ctx.fillRect(barX, barY, barW * 0.30, barH);
+    ctx.fillStyle = 'rgba(248,113,113,0.85)';
+    ctx.fillRect(barX + barW * 0.30, barY, barW * 0.70, barH);
+    ctx.fillStyle = 'rgba(94,234,212,0.7)';
+    ctx.font = "7px 'JetBrains Mono'";
+    ctx.fillText('SENTIMENT  30/70', barX, barY - 2);
+    ctx.restore();
+
+    /* Caption */
+    ctx.fillStyle = 'rgba(94,234,212,0.55)';
+    ctx.font = "8px 'JetBrains Mono'";
+    ctx.textAlign = 'left';
+    ctx.fillText('14,640 TWEETS · F1 0.814 · NEG RECALL 99.7%', 8, H - 4);
+    tick++; requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+/* ── 4. Diabetes Risk — Anatomical heart + multi-beat EKG + age bracket bars */
+function doodleHealth(ctx, W, H) {
+  let tick = 0;
+  function frame() {
+    doodlePrep(ctx, W, H, tick);
+    const cy = H/2;
+
+    /* Heart on left (with simple chamber detail) */
+    const hx = W * 0.16;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(hx, cy + 22);
+    ctx.bezierCurveTo(hx - 28, cy + 4, hx - 24, cy - 18, hx - 8, cy - 16);
+    ctx.bezierCurveTo(hx - 2, cy - 15, hx, cy - 10, hx, cy - 5);
+    ctx.bezierCurveTo(hx, cy - 10, hx + 2, cy - 15, hx + 8, cy - 16);
+    ctx.bezierCurveTo(hx + 24, cy - 18, hx + 28, cy + 4, hx, cy + 22);
+    ctx.stroke();
+    /* aorta + ventricle line */
+    ctx.save();
+    ctx.globalAlpha = 0.5; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(hx - 8, cy - 8); ctx.bezierCurveTo(hx - 4, cy + 4, hx + 4, cy + 4, hx + 8, cy - 8);
+    ctx.stroke();
+    ctx.restore();
+    /* heartbeat pulse rings */
+    doodlePulseRing(ctx, hx, cy, 24, tick, 0, '#f87171');
+    /* heart fill blink */
+    const beat = 0.4 + Math.sin(tick * 0.15) * 0.3;
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, beat) * 0.18;
+    ctx.fillStyle = '#f87171';
+    ctx.beginPath();
+    ctx.moveTo(hx, cy + 22);
+    ctx.bezierCurveTo(hx - 28, cy + 4, hx - 24, cy - 18, hx - 8, cy - 16);
+    ctx.bezierCurveTo(hx - 2, cy - 15, hx, cy - 10, hx, cy - 5);
+    ctx.bezierCurveTo(hx, cy - 10, hx + 2, cy - 15, hx + 8, cy - 16);
+    ctx.bezierCurveTo(hx + 24, cy - 18, hx + 28, cy + 4, hx, cy + 22);
+    ctx.fill();
+    ctx.restore();
+
+    /* EKG line (multi-beat, animated cursor) */
+    const startX = W * 0.32, endX = W - 14;
+    const lineY = cy - 18;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(startX, lineY);
+    for (let x = startX; x < endX; x += 2.5) {
+      let y = lineY;
+      const localX = (x - startX) % 56;
+      if (localX >= 18 && localX < 22)      y = lineY - 4;
+      else if (localX >= 22 && localX < 26) y = lineY + 14;
+      else if (localX >= 26 && localX < 30) y = lineY - 22;
+      else if (localX >= 30 && localX < 34) y = lineY + 6;
+      ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    /* sweep cursor */
+    const sweepX = startX + ((tick * 1.6) % (endX - startX));
+    let sweepY = lineY;
+    const lc = (sweepX - startX) % 56;
+    if (lc >= 18 && lc < 22)      sweepY = lineY - 4;
+    else if (lc >= 22 && lc < 26) sweepY = lineY + 14;
+    else if (lc >= 26 && lc < 30) sweepY = lineY - 22;
+    else if (lc >= 30 && lc < 34) sweepY = lineY + 6;
+    ctx.fillStyle = '#5eead4';
+    ctx.beginPath(); ctx.arc(sweepX, sweepY, 2.4, 0, Math.PI*2); ctx.fill();
+    /* sweep cursor glow */
+    ctx.save(); ctx.globalAlpha = 0.4; ctx.beginPath();
+    ctx.arc(sweepX, sweepY, 6, 0, Math.PI*2); ctx.fill(); ctx.restore();
+
+    /* Age bracket bars (right side, below EKG) */
+    const brackets = [
+      { label: '18-39', recall: 0.30, color: '#f87171' },
+      { label: '40-59', recall: 0.42, color: '#a78bfa' },
+      { label: '60+',   recall: 0.50, color: '#5eead4' },
+    ];
+    const barTop = cy + 12, barH = 6, barGap = 4;
+    const barX0 = W * 0.32, barWmax = (endX - barX0) * 0.85;
+    brackets.forEach((b, i) => {
+      const y = barTop + i * (barH + barGap);
+      /* label */
+      ctx.fillStyle = 'rgba(94,234,212,0.75)';
+      ctx.font = "7px 'JetBrains Mono'";
+      ctx.fillText(b.label, barX0, y + 5);
+      /* bar bg */
+      ctx.save();
+      ctx.globalAlpha = 0.3; ctx.strokeStyle = b.color; ctx.lineWidth = 0.8;
+      ctx.strokeRect(barX0 + 26, y, barWmax, barH);
+      ctx.restore();
+      /* bar fill (animated grow on load — but here just static at recall) */
+      ctx.fillStyle = b.color;
+      ctx.fillRect(barX0 + 26, y, barWmax * b.recall, barH);
+      /* % label */
+      ctx.fillStyle = b.color;
+      ctx.font = "bold 7px 'JetBrains Mono'";
+      ctx.fillText((b.recall * 100).toFixed(0) + '%', barX0 + 26 + barWmax + 4, y + 5);
+    });
+
+    /* Caption */
+    ctx.fillStyle = 'rgba(94,234,212,0.55)';
+    ctx.font = "8px 'JetBrains Mono'";
+    ctx.textAlign = 'left';
+    ctx.fillText('253K RECORDS · RF @ T 0.70 · AT-RISK RECALL', 8, H - 4);
+    tick++; requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+/* ── 5. Supply Chain — Multi-plant + bottleneck port + ships + cost ticker */
+function doodleSupply(ctx, W, H) {
+  let tick = 0;
+  function frame() {
+    doodlePrep(ctx, W, H, tick);
+    const cy = H/2;
+
+    /* Left: 3 stacked factories */
+    const fx = W * 0.13;
+    const factories = [{y: cy - 30}, {y: cy}, {y: cy + 30}];
+    factories.forEach((f, i) => {
+      const isHero = i === 1;
+      ctx.lineWidth = isHero ? 1.6 : 1.1;
+      ctx.save();
+      if (!isHero) ctx.globalAlpha = 0.65;
+      ctx.beginPath();
+      ctx.rect(fx - 14, f.y - 9, 28, 18);
+      /* chimney */
+      ctx.moveTo(fx - 8, f.y - 9); ctx.lineTo(fx - 8, f.y - 15); ctx.lineTo(fx - 4, f.y - 15); ctx.lineTo(fx - 4, f.y - 9);
+      /* roof slant */
+      ctx.moveTo(fx - 14, f.y - 9); ctx.lineTo(fx - 6, f.y - 15);
+      ctx.stroke();
+      /* smoke puff */
+      if (isHero) {
+        ctx.save();
+        ctx.globalAlpha = 0.4;
+        const smokeOff = (tick * 0.5) % 10;
+        ctx.beginPath();
+        ctx.arc(fx - 6, f.y - 17 - smokeOff, 2, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.restore();
+      }
+      ctx.restore();
+    });
+
+    /* Center: PORT04 (the bottleneck — pulsing) */
+    const qx = W * 0.5, qy = cy;
+    /* utilization meter background */
+    ctx.save();
+    ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+    ctx.strokeRect(qx - 22, qy - 18, 44, 36);
+    ctx.restore();
+    /* port box */
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.rect(qx - 18, qy - 8, 36, 22);
+    /* crane mast */
+    ctx.moveTo(qx, qy - 8); ctx.lineTo(qx, qy - 24);
+    ctx.moveTo(qx - 6, qy - 20); ctx.lineTo(qx + 6, qy - 20);
+    /* crane hook */
+    const hookY = qy - 14 + Math.sin(tick * 0.08) * 4;
+    ctx.moveTo(qx + 6, qy - 20); ctx.lineTo(qx + 6, hookY);
+    ctx.stroke();
+    /* containers inside port */
+    ctx.lineWidth = 1;
+    ctx.save();
+    ctx.globalAlpha = 0.7;
+    [[-12, 2], [-2, 2], [8, 2]].forEach(([dx, dy]) => {
+      ctx.beginPath();
+      ctx.rect(qx + dx, qy + dy, 8, 6);
+      ctx.stroke();
+    });
+    ctx.restore();
+    /* pulsing red ring (100% utilization warning) */
+    doodlePulseRing(ctx, qx, qy, 30, tick, 0, '#f87171');
+    /* label */
+    ctx.fillStyle = '#a78bfa';
+    ctx.font = "bold 8px 'JetBrains Mono'";
+    ctx.textAlign = 'center';
+    ctx.fillText('PORT04', qx, qy + 28);
+    ctx.fillStyle = 'rgba(248,113,113,0.85)';
+    ctx.font = "7px 'JetBrains Mono'";
+    ctx.fillText('100%', qx, qy - 26);
+
+    /* Right: Ship with containers */
+    const sx = W * 0.84, sy = cy;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    /* hull */
+    ctx.moveTo(sx - 22, sy + 4); ctx.lineTo(sx - 26, sy + 12); ctx.lineTo(sx + 26, sy + 12); ctx.lineTo(sx + 22, sy + 4); ctx.closePath();
+    /* deck */
+    ctx.moveTo(sx - 18, sy + 4); ctx.lineTo(sx - 18, sy - 8); ctx.lineTo(sx + 18, sy - 8); ctx.lineTo(sx + 18, sy + 4);
+    /* container stack (2 layers) */
+    ctx.moveTo(sx - 14, sy - 8); ctx.lineTo(sx - 14, sy - 16); ctx.lineTo(sx + 14, sy - 16); ctx.lineTo(sx + 14, sy - 8);
+    /* container divisions */
+    [-6, 0, 6].forEach(dx => {
+      ctx.moveTo(sx + dx, sy - 8); ctx.lineTo(sx + dx, sy - 16);
+      ctx.moveTo(sx + dx, sy + 4); ctx.lineTo(sx + dx, sy - 8);
+    });
+    /* smoke stack */
+    ctx.moveTo(sx + 8, sy - 16); ctx.lineTo(sx + 8, sy - 22); ctx.lineTo(sx + 12, sy - 22); ctx.lineTo(sx + 12, sy - 16);
+    ctx.stroke();
+    /* water beneath ship */
+    ctx.save();
+    ctx.globalAlpha = 0.55; ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = sx - 30; x < sx + 30; x += 4) {
+      const w = Math.sin((x + tick * 0.4) * 0.2) * 1.2;
+      if (x === sx - 30) ctx.moveTo(x, sy + 16 + w); else ctx.lineTo(x, sy + 16 + w);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    /* Flowing arrows (animated dash) */
+    ctx.save();
+    ctx.lineDashOffset = -tick * 0.4;
+    ctx.setLineDash([4, 6]);
+    ctx.globalAlpha = 0.7;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(fx + 14, cy); ctx.lineTo(qx - 18, cy);
+    ctx.moveTo(qx + 18, cy); ctx.lineTo(sx - 26, cy);
+    ctx.stroke();
+    ctx.restore();
+
+    /* Cost ticker top right */
+    ctx.fillStyle = '#5eead4';
+    ctx.font = "bold 10px 'JetBrains Mono'";
+    ctx.textAlign = 'right';
+    ctx.fillText('$466K', W - 8, 16);
+    ctx.fillStyle = 'rgba(167,139,250,0.7)';
+    ctx.font = "7px 'JetBrains Mono'";
+    ctx.fillText('TOTAL LANDED', W - 8, 26);
+
+    /* Caption */
+    ctx.fillStyle = 'rgba(94,234,212,0.55)';
+    ctx.font = "8px 'JetBrains Mono'";
+    ctx.textAlign = 'left';
+    ctx.fillText('19 PLANTS · 10 PORTS · 4,057 U/DAY', 8, H - 4);
+    tick++; requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+/* ── 6. VAR Policy — 3 wavy series with grid, today marker, forecast cone */
+function doodleEconomy(ctx, W, H) {
+  let tick = 0;
+  function frame() {
+    doodlePrep(ctx, W, H, tick);
+    const padL = 14, padR = 52, padT = 14, padB = 18;
+    const x0 = padL, x1 = W - padR;
+    const y0 = padT, y1 = H - padB;
+
+    /* Grid (faint) */
+    ctx.save();
+    ctx.strokeStyle = 'rgba(94,234,212,0.12)';
+    ctx.lineWidth = 0.5;
+    for (let gx = x0; gx <= x1; gx += 36) {
+      ctx.beginPath(); ctx.moveTo(gx, y0); ctx.lineTo(gx, y1); ctx.stroke();
+    }
+    for (let gy = y0; gy <= y1; gy += 22) {
+      ctx.beginPath(); ctx.moveTo(x0, gy); ctx.lineTo(x1, gy); ctx.stroke();
+    }
+    ctx.restore();
+
+    /* 3 series */
+    const series = [
+      { amp: 14, freq: 0.04,  phase: 0,   y: (y0 + y1) * 0.32, label: 'EFFR',   color: '#5eead4' },
+      { amp: 10, freq: 0.035, phase: 1.8, y: (y0 + y1) * 0.52, label: 'UNRATE', color: '#a78bfa' },
+      { amp: 8,  freq: 0.05,  phase: 3.4, y: (y0 + y1) * 0.74, label: 'INFL',   color: '#fbbf24' },
+    ];
+
+    /* "Today" vertical line — split history/forecast at 70% */
+    const todayX = x0 + (x1 - x0) * 0.7;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(248,113,113,0.5)';
+    ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(todayX, y0); ctx.lineTo(todayX, y1);
+    ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = '#f87171';
+    ctx.font = "7px 'JetBrains Mono'";
+    ctx.textAlign = 'center';
+    ctx.fillText('NOW', todayX, y0 - 4);
+
+    /* Draw each series, with forecast cone after today */
+    series.forEach(s => {
+      /* historical (solid) */
+      ctx.save();
+      ctx.strokeStyle = s.color;
+      ctx.globalAlpha = 0.9;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for (let x = x0; x <= todayX; x += 2) {
+        const t = (x - x0) * s.freq + tick * 0.014 + s.phase;
+        const y = s.y + Math.sin(t) * s.amp * 0.5;
+        if (x === x0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      /* forecast (dashed, faded) */
+      ctx.save();
+      ctx.strokeStyle = s.color;
+      ctx.globalAlpha = 0.55;
+      ctx.lineWidth = 1.3;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      for (let x = todayX; x <= x1; x += 2) {
+        const t = (x - x0) * s.freq + tick * 0.014 + s.phase;
+        const y = s.y + Math.sin(t) * s.amp * 0.5;
+        if (x === todayX) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      /* forecast cone (uncertainty band) */
+      ctx.save();
+      ctx.fillStyle = s.color;
+      ctx.globalAlpha = 0.10;
+      ctx.beginPath();
+      const ptsUpper = [], ptsLower = [];
+      for (let x = todayX; x <= x1; x += 4) {
+        const t = (x - x0) * s.freq + tick * 0.014 + s.phase;
+        const y = s.y + Math.sin(t) * s.amp * 0.5;
+        const spread = ((x - todayX) / (x1 - todayX)) * (s.amp * 0.7);
+        ptsUpper.push([x, y - spread]);
+        ptsLower.push([x, y + spread]);
+      }
+      ctx.moveTo(ptsUpper[0][0], ptsUpper[0][1]);
+      ptsUpper.forEach(p => ctx.lineTo(p[0], p[1]));
+      for (let i = ptsLower.length - 1; i >= 0; i--) ctx.lineTo(ptsLower[i][0], ptsLower[i][1]);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      /* end label */
+      ctx.fillStyle = s.color;
+      ctx.font = "bold 9px 'JetBrains Mono'";
+      ctx.textAlign = 'left';
+      ctx.fillText(s.label, x1 + 4, s.y + 3);
+    });
+
+    /* Caption */
+    ctx.fillStyle = 'rgba(94,234,212,0.55)';
+    ctx.font = "8px 'JetBrains Mono'";
+    ctx.textAlign = 'left';
+    ctx.fillText('VAR(3) · 752 OBS · IRF + FEVD', 8, H - 4);
+    tick++; requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+/* ── 7. Uber vs Ola — Two detailed cars + spinning wheels + sentiment bars + stars */
+function doodleCarRide(ctx, W, H) {
+  let tick = 0;
+  function frame() {
+    doodlePrep(ctx, W, H, tick);
+    const cy = H/2 + 6;
+
+    const cars = [
+      { x: W * 0.28, label: 'UBER', stars: 3,   sentPos: 0.527, sentNeg: 0.473, bob: Math.sin(tick * 0.05) * 2,           tint: '#5eead4' },
+      { x: W * 0.72, label: 'OLA',  stars: 1.5, sentPos: 0.334, sentNeg: 0.666, bob: Math.sin(tick * 0.05 + Math.PI) * 2, tint: '#a78bfa' },
+    ];
+    cars.forEach(c => {
+      const y = cy + c.bob;
+      /* Car body (line-art with windows) */
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      /* roof curve */
+      ctx.moveTo(c.x - 22, y);
+      ctx.bezierCurveTo(c.x - 18, y - 18, c.x + 18, y - 18, c.x + 22, y);
+      /* hood + bumper */
+      ctx.lineTo(c.x + 30, y + 4);
+      ctx.lineTo(c.x + 30, y + 10);
+      ctx.lineTo(c.x - 30, y + 10);
+      ctx.lineTo(c.x - 30, y + 4);
+      ctx.closePath();
+      ctx.stroke();
+      /* windows (front + rear) */
+      ctx.lineWidth = 1.1;
+      ctx.beginPath();
+      ctx.moveTo(c.x - 18, y - 4); ctx.lineTo(c.x - 8, y - 14); ctx.lineTo(c.x - 6, y - 4); ctx.closePath();
+      ctx.moveTo(c.x + 18, y - 4); ctx.lineTo(c.x + 8, y - 14); ctx.lineTo(c.x + 6, y - 4); ctx.closePath();
+      ctx.stroke();
+      /* door line */
+      ctx.beginPath();
+      ctx.moveTo(c.x, y - 4); ctx.lineTo(c.x, y + 10);
+      ctx.stroke();
+      /* headlight */
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath(); ctx.arc(c.x + 27, y + 5, 1.5, 0, Math.PI*2); ctx.fill();
+      /* tail light */
+      ctx.fillStyle = '#f87171';
+      ctx.beginPath(); ctx.arc(c.x - 27, y + 5, 1.5, 0, Math.PI*2); ctx.fill();
+      /* Spinning wheels */
+      const wheelAng = tick * 0.15;
+      [[-18, 12], [18, 12]].forEach(([dx, dy]) => {
+        ctx.save();
+        ctx.translate(c.x + dx, y + dy);
+        ctx.rotate(wheelAng);
+        ctx.beginPath();
+        ctx.arc(0, 0, 5, 0, Math.PI*2);
+        /* spokes */
+        for (let s = 0; s < 4; s++) {
+          ctx.moveTo(0, 0);
+          ctx.lineTo(Math.cos(s * Math.PI / 2) * 5, Math.sin(s * Math.PI / 2) * 5);
+        }
+        ctx.stroke();
+        ctx.restore();
+      });
+      /* Brand label */
+      ctx.fillStyle = c.tint;
+      ctx.font = "bold 10px 'JetBrains Mono'";
+      ctx.textAlign = 'center';
+      ctx.fillText(c.label, c.x, y + 28);
+      /* Stars (4-row) */
+      const sCx = c.x - 12, sCy = y - 28;
+      for (let i = 0; i < 4; i++) {
+        const filled = i < Math.floor(c.stars);
+        const half = (i === Math.floor(c.stars)) && (c.stars % 1 > 0);
+        const color = filled || half ? '#fbbf24' : 'rgba(251,191,36,0.5)';
+        doodleStar(ctx, sCx + i * 8, sCy, 3, color, filled || half);
+      }
+      /* Sentiment split bar below stars */
+      const barX = c.x - 18, barY = sCy + 6, barW = 36, barH = 4;
+      ctx.fillStyle = '#5eead4';
+      ctx.fillRect(barX, barY, barW * c.sentPos, barH);
+      ctx.fillStyle = 'rgba(248,113,113,0.85)';
+      ctx.fillRect(barX + barW * c.sentPos, barY, barW * c.sentNeg, barH);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(94,234,212,0.45)'; ctx.lineWidth = 0.8;
+      ctx.strokeRect(barX, barY, barW, barH);
+      ctx.restore();
+    });
+
+    /* "vs" badge in the middle */
+    ctx.save();
+    const vsY = cy - 18;
+    ctx.fillStyle = 'rgba(167,139,250,0.85)';
+    ctx.beginPath(); ctx.arc(W/2, vsY, 10, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(167,139,250,0.85)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = '#a78bfa';
+    ctx.font = "bold 9px 'JetBrains Mono'";
+    ctx.textAlign = 'center';
+    ctx.fillText('vs', W/2, vsY + 3);
+    ctx.restore();
+
+    /* Caption */
+    ctx.fillStyle = 'rgba(94,234,212,0.55)';
+    ctx.font = "8px 'JetBrains Mono'";
+    ctx.textAlign = 'left';
+    ctx.fillText('1.7M REVIEWS · OR 2.70 · P<2e-16', 8, H - 4);
+    tick++; requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+/* ── 8. Tennis — Court lines + detailed racket + bouncing ball + age-peak chart */
+function doodleTennis(ctx, W, H) {
+  let tick = 0;
+  function frame() {
+    doodlePrep(ctx, W, H, tick);
+
+    /* Faint court lines (background) */
+    ctx.save();
+    ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+    /* outer */
+    ctx.strokeRect(W * 0.45, H * 0.2, W * 0.40, H * 0.6);
+    /* net (vertical) */
+    ctx.beginPath();
+    ctx.moveTo(W * 0.65, H * 0.2); ctx.lineTo(W * 0.65, H * 0.8);
+    /* service lines */
+    ctx.moveTo(W * 0.45, H * 0.5); ctx.lineTo(W * 0.85, H * 0.5);
+    ctx.moveTo(W * 0.55, H * 0.35); ctx.lineTo(W * 0.55, H * 0.65);
+    ctx.moveTo(W * 0.75, H * 0.35); ctx.lineTo(W * 0.75, H * 0.65);
+    ctx.stroke();
+    ctx.restore();
+
+    /* Racket (left) */
+    const cx = W * 0.20, cy = H/2 + 4;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - 16, 22, 28, -0.18, 0, Math.PI*2);
+    ctx.stroke();
+    /* Strings (clipped to head) */
+    ctx.save();
+    ctx.globalAlpha = 0.45; ctx.lineWidth = 0.7;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - 16, 22, 28, -0.18, 0, Math.PI*2);
+    ctx.clip();
+    for (let i = -6; i <= 6; i++) {
+      ctx.beginPath();
+      ctx.moveTo(cx + i * 4, cy - 50); ctx.lineTo(cx + i * 4 + 8, cy + 10);
+      ctx.stroke();
+    }
+    for (let j = -5; j <= 5; j++) {
+      ctx.beginPath();
+      ctx.moveTo(cx - 28, cy - 16 + j * 5); ctx.lineTo(cx + 28, cy - 16 + j * 5 + 3);
+      ctx.stroke();
+    }
+    ctx.restore();
+    /* Throat + handle */
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(cx - 6, cy + 8); ctx.lineTo(cx - 12, cy + 4);
+    ctx.moveTo(cx + 6, cy + 8); ctx.lineTo(cx + 12, cy + 4);
+    ctx.moveTo(cx - 4, cy + 8); ctx.lineTo(cx - 4, cy + 36);
+    ctx.moveTo(cx + 4, cy + 8); ctx.lineTo(cx + 4, cy + 36);
+    /* grip wraps */
+    for (let i = 0; i < 4; i++) {
+      ctx.moveTo(cx - 4, cy + 14 + i * 6);
+      ctx.lineTo(cx + 4, cy + 18 + i * 6);
+    }
+    ctx.stroke();
+
+    /* Bouncing ball with arc trajectory */
+    const ballT = (tick * 0.025) % (Math.PI * 2);
+    const ballX = W * 0.55 + Math.sin(ballT) * 18;
+    const ballY = cy - 12 + Math.abs(Math.cos(ballT)) * 24;
+    /* trajectory dotted arc */
+    ctx.save();
+    ctx.globalAlpha = 0.4; ctx.lineWidth = 0.8;
+    ctx.setLineDash([2, 3]);
+    ctx.beginPath();
+    for (let t = 0; t <= Math.PI * 2; t += 0.1) {
+      const x = W * 0.55 + Math.sin(t) * 18;
+      const y = cy - 12 + Math.abs(Math.cos(t)) * 24;
+      if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+    /* main ball */
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.arc(ballX, ballY, 7, 0, Math.PI*2);
+    ctx.moveTo(ballX - 6, ballY - 2);
+    ctx.quadraticCurveTo(ballX, ballY + 4, ballX + 6, ballY - 2);
+    ctx.moveTo(ballX - 6, ballY + 2);
+    ctx.quadraticCurveTo(ballX, ballY - 4, ballX + 6, ballY + 2);
+    ctx.stroke();
+    ctx.fillStyle = '#fbbf24';
+    ctx.beginPath(); ctx.arc(ballX, ballY, 7, 0, Math.PI*2);
+    ctx.globalAlpha = 0.15; ctx.fill();
+    ctx.globalAlpha = 1;
+
+    /* Mini age-peak chart (bottom right) */
+    const chartX = W - 80, chartY = H - 32, chartW = 70, chartH = 22;
+    ctx.save();
+    ctx.globalAlpha = 0.5; ctx.lineWidth = 0.8;
+    ctx.strokeRect(chartX, chartY, chartW, chartH);
+    /* age curve */
+    ctx.globalAlpha = 0.9; ctx.strokeStyle = '#5eead4'; ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    for (let i = 0; i <= 30; i++) {
+      const x = chartX + (i / 30) * chartW;
+      const age = 17 + i;
+      const y = chartY + chartH - Math.exp(-Math.pow((age - 25) / 4.5, 2)) * chartH * 0.85;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    /* peak marker */
+    ctx.fillStyle = '#5eead4';
+    ctx.beginPath();
+    ctx.arc(chartX + chartW * 0.27, chartY + chartH - chartH * 0.85, 2.5, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = '#5eead4';
+    ctx.font = "bold 8px 'JetBrains Mono'";
+    ctx.textAlign = 'left';
+    ctx.fillText('PEAK 24-26', chartX, chartY - 4);
+
+    /* Caption */
+    ctx.fillStyle = 'rgba(94,234,212,0.55)';
+    ctx.font = "8px 'JetBrains Mono'";
+    ctx.fillText('WTA · ERD→AWS · 53.4% WIN RATE', 8, H - 4);
+    tick++; requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+/* ── 9. IMDb — Animated clapperboard + spinning reel with film strip + stars */
+function doodleMovie(ctx, W, H) {
+  let tick = 0;
+  function frame() {
+    doodlePrep(ctx, W, H, tick);
+
+    /* Marquee dot lights (top edge) */
+    for (let i = 0; i < 14; i++) {
+      const lit = ((tick * 0.1 + i) % 14) < 4;
+      ctx.fillStyle = lit ? '#fbbf24' : 'rgba(94,234,212,0.25)';
+      ctx.beginPath();
+      ctx.arc(8 + i * (W - 16) / 13, 10, 1.6, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    /* Clapperboard (left) */
+    const bx = W * 0.27, by = H/2;
+    const bw = 56, bh = 38;
+    ctx.lineWidth = 1.6;
+    /* body */
+    ctx.beginPath();
+    ctx.rect(bx - bw/2, by - bh/2 + 8, bw, bh - 8);
+    ctx.stroke();
+    /* lines inside body (movie/scene/take) */
+    ctx.save();
+    ctx.globalAlpha = 0.5; ctx.lineWidth = 0.9;
+    ctx.beginPath();
+    ctx.moveTo(bx - bw/2 + 4, by - 2); ctx.lineTo(bx + bw/2 - 4, by - 2);
+    ctx.moveTo(bx - bw/2 + 4, by + 6); ctx.lineTo(bx + bw/2 - 4, by + 6);
+    ctx.stroke();
+    ctx.restore();
+    /* slate text */
+    ctx.fillStyle = '#5eead4';
+    ctx.font = "bold 7px 'JetBrains Mono'";
+    ctx.textAlign = 'left';
+    ctx.fillText('IMDB', bx - bw/2 + 4, by + 1);
+    ctx.fillText('TOP 1000', bx - bw/2 + 4, by + 9);
+    /* top arm (animated open/close) */
+    ctx.save();
+    ctx.translate(bx - bw/2, by - bh/2 + 8);
+    const ang = -0.05 + Math.sin(tick * 0.05) * 0.12;
+    ctx.rotate(ang);
+    ctx.beginPath();
+    ctx.rect(0, -13, bw, 13);
+    ctx.stroke();
+    /* diagonal stripes */
+    for (let i = 0; i < 5; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * 11, -13); ctx.lineTo(i * 11 + 6, 0); ctx.stroke();
+    }
+    ctx.restore();
+
+    /* Film strip extending from reel */
+    const rx = W * 0.74, ry = by;
+    const stripY1 = ry - 12, stripY2 = ry + 12, stripW = 50;
+    const stripX = rx - 26;
+    /* strip body */
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.rect(stripX - stripW, stripY1, stripW, 24);
+    ctx.stroke();
+    /* sprocket holes (top + bottom rows) */
+    const holeOff = (tick * 0.4) % 8;
+    ctx.save();
+    ctx.fillStyle = 'rgba(94,234,212,0.5)';
+    for (let i = 0; i < 7; i++) {
+      const x = stripX - stripW + 4 + i * 8 - holeOff;
+      if (x > stripX - stripW + 2 && x < stripX - 2) {
+        ctx.fillRect(x, stripY1 + 2, 4, 2);
+        ctx.fillRect(x, stripY2 - 4, 4, 2);
+      }
+    }
+    ctx.restore();
+    /* frames */
+    ctx.save();
+    ctx.globalAlpha = 0.35; ctx.lineWidth = 0.6;
+    for (let i = 0; i < 3; i++) {
+      ctx.strokeRect(stripX - stripW + 6 + i * 14, stripY1 + 6, 12, 12);
+    }
+    ctx.restore();
+
+    /* Spinning film reel */
+    const rr = 22;
+    const reelAng = tick * 0.03;
+    /* outer wheel */
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(rx, ry, rr, 0, Math.PI*2);
+    /* center hub */
+    ctx.moveTo(rx + 4, ry);
+    ctx.arc(rx, ry, 4, 0, Math.PI*2);
+    ctx.stroke();
+    /* spoke holes */
+    ctx.save();
+    ctx.translate(rx, ry);
+    ctx.rotate(reelAng);
+    for (let i = 0; i < 6; i++) {
+      ctx.save();
+      ctx.rotate(i * Math.PI / 3);
+      ctx.beginPath();
+      ctx.arc(rr * 0.62, 0, 4, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
+
+    /* Stars (4.5/5) */
+    const sBaseX = bx - 30, sBaseY = by + bh/2 + 14;
+    for (let i = 0; i < 5; i++) {
+      const filled = i < 4;
+      const color = filled ? '#fbbf24' : 'rgba(251,191,36,0.5)';
+      doodleStar(ctx, sBaseX + i * 13, sBaseY, 3.5, color, filled);
+    }
+    /* rating text */
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = "bold 8px 'JetBrains Mono'";
+    ctx.textAlign = 'left';
+    ctx.fillText('4.5/5', sBaseX + 5 * 13 + 4, sBaseY + 3);
+
+    /* Caption */
+    ctx.fillStyle = 'rgba(94,234,212,0.55)';
+    ctx.font = "8px 'JetBrains Mono'";
+    ctx.textAlign = 'left';
+    ctx.fillText('1000 FILMS · R² 0.451 · VOTES > RATING', 8, H - 4);
+    tick++; requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+projectVis('pv0','airbnb');     /* 01 BookedOut */
+projectVis('pv1','basketball'); /* 02 NBA Expansion */
+projectVis('pv2','airline');    /* 03 Airline Tweet */
+projectVis('pv3','health');     /* 04 Diabetes */
+projectVis('pv4','supply');     /* 05 Supply Chain */
+projectVis('pv5','economy');    /* 06 VAR Policy */
+projectVis('pv6','carride');    /* 07 Uber vs Ola */
+projectVis('pv7','tennis');     /* 08 Tennis */
+projectVis('pv8','movie');      /* 09 IMDb */
+
+/* ─────────────────────────────
+   PRESENTATION VIEWER (view-only)
+   Opens a modal with the PDF embedded. `#toolbar=0&navpanes=0` hides
+   the browser's PDF toolbar (including the download button) in Chrome,
+   Edge, and Firefox. Right-click is blocked on the modal as well.
+   Note: a determined user can still find the PDF URL in DevTools —
+   true DRM is impossible for static-hosted files.
+───────────────────────────── */
+(function(){
+  const modal  = document.getElementById('pdf-modal');
+  const iframe = document.getElementById('pdf-modal-iframe');
+  const titleEl = document.getElementById('pdf-modal-title');
+  if (!modal || !iframe) return;
+
+  window.openPresentation = function(url, title){
+    titleEl.textContent = title || 'Presentation';
+    /* PDF viewer hash params: hide toolbar + side nav, fit width. */
+    iframe.src = url + '#toolbar=0&navpanes=0&scrollbar=1&view=FitH';
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+  };
+
+  function close(){
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden','true');
+    iframe.src = '';                     /* stop loading / free memory */
+    document.body.style.overflow = '';
+  }
+  window.closePresentation = close;
+
+  /* Close triggers: overlay click, close button, Escape key */
+  modal.addEventListener('click', e => {
+    if (e.target.dataset && e.target.dataset.close) close();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !modal.hidden) close();
+  });
+  /* Discourage save-as via context menu inside the modal. */
+  modal.addEventListener('contextmenu', e => e.preventDefault());
+})();
 
 
 /* ─────────────────────────────
